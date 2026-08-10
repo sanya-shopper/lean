@@ -289,6 +289,116 @@ repos directly. That grep should be done before publishing any "first" claim.
 
 ---
 
+## 6. Retrospective: formalizing what broke MD4 / MD5 / SHA-0 / SHA-1
+
+The unbroken SHA-256 frontier (§5) is *forward*-looking. There is a sharper,
+more concrete target looking *backward*: the hash functions that were actually
+broken accumulated a large, reusable body of cryptanalytic knowledge — and
+**none of it has ever been machine-checked**, in any proof assistant. "Formalize
+the learning" turns out to be more tractable than analyzing SHA-256, because the
+attacks are concrete, finished, and published in detail.
+
+**The technique lineage (all rigorous-paper / tooling, zero machine-checked):**
+- **MD4** — Dobbertin (FSE 1996); trivial cost via Wang et al. (EUROCRYPT 2005).
+  The archetype; the whole MD/SHA line inherits its differential machinery.
+- **MD5** — Wang–Yu (EUROCRYPT 2005): signed/modular differences + a hand-crafted
+  differential path + **message modification** forcing early-round conditions.
+  Chosen-prefix collisions: Stevens–Lenstra–de Weger (2007/2012), weaponized in
+  the **Flame** malware (2012).
+- **SHA-0** — Chabaud–Joux (CRYPTO 1998): the origin of the toolkit — **local
+  collisions** (a 1-bit disturbance cancelled within ~5 steps by corrections),
+  **linearize** the compression function so the self-cancelling patterns form a
+  **linear code**, and a **disturbance vector** is a codeword; attack cost ≈
+  product of per-local-collision probabilities.
+- **SHA-1** — theory: Wang–Yin–Yu (CRYPTO 2005); **generalized conditions +
+  automatic path search**: De Cannière–Rechberger (ASIACRYPT 2006 best paper);
+  first practical collision **SHAttered** (Stevens et al., CRYPTO 2017, ≈2^63.1,
+  ~6500 CPU-yr + ~100 GPU-yr, SAT-assisted path + GPU near-collision search);
+  chosen-prefix **"SHA-1 is a Shambles"** (Leurent–Peyrin, USENIX 2020).
+
+**What "the learning" is, mathematically (the formalizable core):**
+1. **Difference algebra through the round functions** — XOR vs modular/signed
+   differences; exact for rotation/XOR-with-constant, *data-dependent
+   (probabilistic)* through AND/IF/MAJ and modular addition. This is exactly the
+   `Diff.lean` illustration in the primer, and the addition case is the
+   Lipmaa–Moriai result (survey §5 B1). **Generalized conditions are a sound
+   abstract domain over pairs of executions; condition propagation is an
+   abstract-interpretation transfer function** — and "propagation is sound" is a
+   clean, machine-checkable theorem.
+2. **Local-collision / disturbance-vector theory** — linearity of the message
+   expansion (trivial), the **DV = codeword** characterization (clean 𝔽₂ linear
+   algebra), and the per-local-collision probability as an **exact rational from a
+   finite model count**.
+3. **Message-modification correctness** — *basic* modification is a genuinely
+   deterministic theorem (invertibility/triangularity of the first-16-step state
+   map ⇒ any first-round condition is forceable without disturbing earlier ones);
+   *advanced* modification / tunnels are path-specific and laborious.
+4. **The probability calculus and its load-bearing assumptions** — attack work ≈
+   (∏ per-step condition probabilities)⁻¹ × cost/trial, valid only under
+   **independence** of conditions and the **hypothesis of stochastic
+   equivalence**. These are empirically calibrated, *not* provable — so the honest
+   formalizable statement is method **soundness**, not the 2^63 complexity.
+
+**Existing formalization of the attack side: essentially nothing** (confirmed).
+Collisions are checkable by recomputation; path-search is trusted SAT/CAS tooling
+(Nossum, Mironov–Zhang SAT 2006, CDCL(Crypto), the SHA-256 programmatic-SAT
+38-step collision, arXiv 2406.20072); verified UNSAT-certificate checkers
+(GRAT/gratchk, cake_lpr) exist but have **never been pointed at a hash attack**.
+Provable-security work (EasyCrypt's verified **Merkle–Damgård** CR reduction;
+CryptHOL; FCF) proves the *opposite* direction ("if the compression function is
+collision-resistant then MD is") and treats the compression function as an
+abstract oracle. Spec-side hash *correctness* is available as a ready-made
+specification (Appel's Coq SHA-256; HACL\* F\* SHA-1/2), and in Lean you'd write
+the round-function spec yourself in `BitVec` (small).
+
+**Enabling tech worth flagging:** *certified model counting* now exists —
+Bryant–Heule CPOG (SAT 2023) for exact #SAT, and formally-certified *approximate*
+model counting in Isabelle/HOL (CAV 2024). That is the missing link for a
+**certified** local-collision probability (target R3 below) — turning a
+semi-formal probability into a theorem-grade rational.
+
+**Ranked retrospective targets for a volunteer** (difficulty in brackets):
+- **R1 — Round-function spec + `bv_decide` collision/step verifier** [easy,
+  ~weekend–2wk]. Formalize MD5/SHA-1 compression in `BitVec`; machine-check that
+  the published SHAttered/Wang pairs collide and that individual step transitions
+  hold. Low novelty, but the necessary base and immediately shippable.
+- **R2 — Generalized-conditions abstract domain + propagation soundness** [low–
+  med]. Best value/effort: turn the De Cannière–Rechberger propagation rules into
+  machine-checked transfer-function lemmas, yielding a checker that *a published
+  differential path is internally consistent*. No prior machine-checked work.
+- **R3 — Local-collision probability + DV = codeword (SHA-0/1)** [med]. The 𝔽₂
+  linear-code characterization + a **certified exact per-local-collision
+  probability** via `decide`/reflection or the CPOG #SAT pipeline. First
+  theorem-grade probability in this line.
+- **R4 — Basic message-modification correctness** [med]. The deterministic
+  invertibility theorem; clean and self-contained. (Tunnels/advanced: defer.)
+- **R5 — Soundness-of-method capstone** [med–high, mostly integration of R1–R4]:
+  *"if the search returns a pair satisfying all path conditions, that pair is a
+  genuine collision of the real compression function"* — explicitly decoupled
+  from the heuristic complexity. **The most honest and complete "formalize the
+  learning" deliverable**, and the one statement whose truth depends on no
+  unprovable heuristic.
+
+**Do NOT attempt:** a machine-checked *complexity* bound (the 2^63). It is not a
+theorem — it rests on independence + stochastic equivalence, which are calibrated
+empirically. Frame any project's top goal as soundness (R5), never complexity.
+
+**How this connects to §5:** R2/R3 are the concrete, *retrospective* instances of
+the forward-looking B-targets — differential-path formalization on a hash where
+the path is already published and the collision already exists. Combined with the
+top forward pick **B1 (Lipmaa–Moriai)**, they form a natural progression: prove
+the one addition-difference algorithm (B1), then the abstract domain that composes
+such facts (R2), then a certified probability (R3), then method soundness (R5).
+
+**Sources (broken-hash thread):** Chabaud–Joux (CRYPTO 1998) · Wang–Yu
+(EUROCRYPT 2005) · Wang–Yin–Yu (CRYPTO 2005) · De Cannière–Rechberger (ASIACRYPT
+2006) · Stevens et al. SHAttered (ePrint 2017/190) · Leurent–Peyrin (ePrint
+2020/014) · Mironov–Zhang (ePrint 2006/254) · Alamgir–Nejati–Bright (arXiv
+2406.20072) · EasyCrypt Merkle–Damgård tutorial · Bryant–Heule CPOG (SAT 2023) ·
+certified approximate #SAT (CAV 2024).
+
+---
+
 ## Appendix: key sources
 
 Lean: LNSym (github.com/leanprover/LNSym) · Verified-zkEVM/clean

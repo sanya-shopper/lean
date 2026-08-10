@@ -37,6 +37,8 @@ verification*. (The `#eval` lines also serve as executable spot-checks.)
 | `Primer/Proofs.lean` | Propositions as types; the workhorse tactics `rfl`, `decide`, `simp`, `omega`, `induction`; `sorry` as a hole. |
 | `Primer/BitVec.lean` | Fixed-width `BitVec 32` arithmetic — modular add, XOR/AND/NOT, rotation — and the actual SHA-256 building blocks (`Ch`, `Maj`, `Sigma0/1`, `sigma0/1`). Where `decide` stops and SAT (`bv_decide`) begins. |
 | `Primer/Spec.lean` | The **verify-your-own-code** workflow: an invariant that travels with the data as a proof, a monotonicity theorem, and a fast implementation proved equal to a reference model. |
+| `Primer/Diff.lean` | The atom of differential cryptanalysis: XOR/AND/modular-add difference algebra (exact vs data-dependent) and why *checking* a collision is trivial while *reasoning* about it is the content. Ties to the survey. |
+| `Primer/Josephus.lean` | A real theorem, proved: the Josephus closed form `J(2^m+l)=2l+1` from Knuth's *Concrete Mathematics*, three formulations machine-checked to agree, with the "rotate the binary numeral left by one bit" view echoing `rotr`. |
 
 ## Cookbook: recipes you can copy
 
