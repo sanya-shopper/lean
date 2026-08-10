@@ -4,5 +4,18 @@
 *.olean
 *.ilean
 *.c
+# LaTeX build aux (the .pdf is a tracked output; these are not)
+*.aux
+*.bcf
+*.bbl
+*.bcf-SAVE-ERROR
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.toc
+
 # Scratch
 scratchpad/
