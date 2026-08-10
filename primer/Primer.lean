@@ -3,3 +3,4 @@ import Primer.Basics
 import Primer.Proofs
 import Primer.BitVec
 import Primer.Spec
+import Primer.Diff
