@@ -1,0 +1,309 @@
+<style>
+  :root {
+    --ground: #f1f5f4;
+    --surface: #ffffff;
+    --surface-2: #e9efed;
+    --ink: #14201f;
+    --ink-2: #33423f;
+    --muted: #5c6b68;
+    --line: #d6dedb;
+    --line-2: #c3cfcc;
+    --accent: #0b7a6e;
+    --accent-ink: #075c53;
+    --frontier: #b4530a;
+    --frontier-ink: #8a3f06;
+    --settled-bg: rgba(11,122,110,0.08);
+    --frontier-bg: rgba(180,83,10,0.09);
+    --code-bg: #0f1b1a;
+    --code-ink: #d3e0dd;
+    --code-key: #7fd8c9;
+    --code-com: #6a807c;
+    --code-lit: #e0a56a;
+    --shadow: 0 1px 2px rgba(20,32,31,0.04), 0 8px 24px rgba(20,32,31,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0c1312; --surface: #111b19; --surface-2: #16221f;
+      --ink: #e7edeb; --ink-2: #c2cecb; --muted: #90a29e;
+      --line: #22302d; --line-2: #2c3d39;
+      --accent: #40b8a8; --accent-ink: #6fd0c2;
+      --frontier: #e0954f; --frontier-ink: #f0b585;
+      --settled-bg: rgba(64,184,168,0.10); --frontier-bg: rgba(224,149,79,0.11);
+      --code-bg: #0a1211; --code-ink: #cddad7;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0c1312; --surface: #111b19; --surface-2: #16221f;
+    --ink: #e7edeb; --ink-2: #c2cecb; --muted: #90a29e;
+    --line: #22302d; --line-2: #2c3d39;
+    --accent: #40b8a8; --accent-ink: #6fd0c2;
+    --frontier: #e0954f; --frontier-ink: #f0b585;
+    --settled-bg: rgba(64,184,168,0.10); --frontier-bg: rgba(224,149,79,0.11);
+    --code-bg: #0a1211; --code-ink: #cddad7;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 17px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 24px; }
+  .col { max-width: 700px; }
+
+  header.top { border-bottom: 1px solid var(--line); background: linear-gradient(180deg, var(--surface), var(--ground)); }
+  .eyebrow { font-family: ui-monospace, Menlo, monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-ink); display: inline-flex; align-items: center; gap: 8px; }
+  .eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--accent); display: inline-block; }
+  h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.08; letter-spacing: -0.02em; margin: 16px 0 10px; text-wrap: balance; font-weight: 680; }
+  .lede { font-size: clamp(17px, 2.2vw, 20px); color: var(--ink-2); max-width: 660px; margin: 0; text-wrap: pretty; }
+  .meta { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 13px; }
+
+  section { padding: 48px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
+  h2 { font-size: clamp(22px, 3vw, 27px); letter-spacing: -0.015em; margin: 0 0 6px; font-weight: 660; text-wrap: balance; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 15px; }
+  h3 { font-size: 18px; margin: 26px 0 6px; letter-spacing: -0.01em; }
+  p { margin: 0 0 14px; }
+  .col p, .col li { color: var(--ink-2); }
+  strong { font-weight: 640; color: var(--ink); }
+  a { color: var(--accent-ink); text-underline-offset: 2px; }
+
+  /* comparison table */
+  .tblwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); margin-top: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; background: var(--surface); }
+  th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14.5px; }
+  thead th { font-family: ui-monospace, Menlo, monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.axis { font-weight: 620; color: var(--ink); white-space: nowrap; }
+  .lean-col { background: var(--settled-bg); }
+  th.lean-col { color: var(--accent-ink); }
+
+  /* code blocks */
+  pre { margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 18px 20px; overflow-x: auto; box-shadow: var(--shadow); }
+  pre code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13.5px; line-height: 1.65; }
+  .k { color: var(--code-key); }
+  .c { color: var(--code-com); font-style: italic; }
+  .l { color: var(--code-lit); }
+  .filetag { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--muted); margin: 22px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .filetag::before { content: "▸"; color: var(--accent); }
+
+  /* recipe grid */
+  .recipes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  .recipe { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .recipe .rt { font-size: 14px; font-weight: 620; color: var(--ink); margin-bottom: 8px; }
+  .recipe code { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; background: var(--code-bg); color: var(--code-ink); padding: 9px 11px; border-radius: 7px; overflow-x: auto; white-space: pre; }
+
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 8px 0 0; }
+  .steps li { counter-increment: s; position: relative; padding: 4px 0 14px 42px; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 2px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: var(--accent); color: #fff; font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 14px; }
+  :root[data-theme="dark"] .steps li::before, :root:not([data-theme="light"]) .steps li::before { color: #06110f; }
+
+  .callout { background: var(--surface-2); border-left: 3px solid var(--frontier); border-radius: 0 10px 10px 0; padding: 15px 18px; margin-top: 8px; font-size: 14.5px; color: var(--ink-2); }
+  .callout strong { color: var(--ink); }
+
+  .pill { font-family: ui-monospace, Menlo, monospace; font-size: 12px; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--accent-ink); background: var(--settled-bg); }
+
+  footer { padding: 36px 0 60px; color: var(--muted); font-size: 13.5px; }
+
+  @media (max-width: 720px) { .recipes { grid-template-columns: 1fr; } }
+</style>
+
+<header class="top">
+  <div class="wrap" style="padding-top:44px;padding-bottom:38px;">
+    <div class="eyebrow">Lean 4 · primer &amp; cookbook</div>
+    <h1>Lean 4 for people who prove things elsewhere</h1>
+    <p class="lede">A concept-first tour of Lean 4 for a math-and-engineering reader coming from TLA+ or Haskell — plus a runnable cookbook. Every code block below is real Lean that type-checks on v4.33.0 with no mathlib.</p>
+    <div class="meta">
+      <span class="pill">no mathlib required</span>
+      <span class="mono">toolchain · elan + lean 4.33 + lake</span>
+      <span class="mono">companion · primer/ in the repo</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>What Lean actually is</h2>
+      <p class="sub">Two tools in one coat, unified by a single idea.</p>
+      <p>Lean 4 is a <strong>dependently-typed functional programming language</strong> and an <strong>interactive theorem prover</strong> — the same language for both. The link is the <strong>Curry–Howard correspondence</strong>: a proposition <em>is</em> a type, a proof <em>is</em> a term (a program) of that type, and so <strong>type-checking is proof-checking</strong>. A wrong proof is simply a term that fails to type-check.</p>
+      <p>What you trust is a <strong>small, audited kernel</strong> that only verifies terms against their types. Every tactic, every piece of automation — however elaborate or buggy — must ultimately emit a term the kernel re-checks. That is why you can lean on powerful automation without risking soundness.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>Situating it: vs. TLA+ and Haskell</h2>
+      <p class="sub">You likely know one of these. The differences tell you exactly which questions Lean is for.</p>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>Axis</th><th>TLA+</th><th class="lean-col">Lean 4</th><th>Haskell</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="axis">Primary job</td>
+            <td>Specify systems &amp; temporal behavior</td>
+            <td class="lean-col">Prove theorems; write verified programs</td>
+            <td>Write programs</td>
+          </tr>
+          <tr>
+            <td class="axis">How you check</td>
+            <td>Model-check a <strong>finite</strong> state space (TLC); finds counterexamples</td>
+            <td class="lean-col"><strong>Deduce</strong> over possibly-infinite objects; no counterexamples unless you search</td>
+            <td>Type-check; run tests</td>
+          </tr>
+          <tr>
+            <td class="axis">Scope of a claim</td>
+            <td>Bounded, automatic, exhaustive-within-bounds</td>
+            <td class="lean-col">Unbounded (∀), manual + tactic-assisted</td>
+            <td>Types constrain; no proofs of behavior</td>
+          </tr>
+          <tr>
+            <td class="axis">Types</td>
+            <td>Untyped set theory</td>
+            <td class="lean-col"><strong>Full dependent types</strong> — types depend on values, can express theorems</td>
+            <td>Hindley–Milner + extensions; no value-dependent types</td>
+          </tr>
+          <tr>
+            <td class="axis">Totality</td>
+            <td>n/a</td>
+            <td class="lean-col"><strong>Total by default</strong> (termination-checked) — so a function can be a proof</td>
+            <td>Lazy &amp; partial; ⊥ inhabits every type</td>
+          </tr>
+          <tr>
+            <td class="axis">Reach for it when…</td>
+            <td>"Does my concurrent design have a bad interleaving?"</td>
+            <td class="lean-col">"Is this true for <em>all</em> inputs, provably?"</td>
+            <td>"Can I write this elegantly?"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin-top:14px;">Lean has <span class="mono">#eval</span> and <span class="mono">decide</span>/<span class="mono">native_decide</span> for bounded, computational checks — which can <em>feel</em> a little model-checker-ish on finite decidable props — but that is evaluating a decision procedure, not exploring a temporal state space.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>The proof experience</h2>
+      <p class="sub">Term mode, tactic mode, and the tactics you'll actually use.</p>
+      <p>A proof is either a <strong>term</strong> you hand Lean directly, or — more often — a sequence of <strong>tactics</strong> in a <span class="mono">by</span> block that transform the goal while Lean assembles the term behind the scenes. In an editor, the <strong>infoview</strong> shows the live <strong>goal state</strong> (your hypotheses and what remains) after every tactic.</p>
+    </div>
+    <div class="filetag">Primer/Proofs.lean — all of these type-check</div>
+    <pre><code><span class="c">-- proof by computation: both sides reduce to the same value</span>
+<span class="k">theorem</span> two_plus_two : <span class="l">2</span> + <span class="l">2</span> = <span class="l">4</span> := <span class="k">by</span> rfl
+
+<span class="c">-- a decidable fact, settled by actually evaluating it</span>
+<span class="k">example</span> : (<span class="l">7</span> * <span class="l">6</span> = <span class="l">42</span>) ∧ (<span class="l">3</span> &lt; <span class="l">10</span>) := <span class="k">by</span> decide
+
+<span class="c">-- linear arithmetic: omega closes goals rfl/decide can't</span>
+<span class="k">example</span> (a b : <span class="k">Nat</span>) : a + b = b + a := <span class="k">by</span> omega
+
+<span class="c">-- a ∀-statement proved by induction (length is preserved by map)</span>
+<span class="k">theorem</span> length_map (f : α → β) (xs : <span class="k">List</span> α) :
+    (xs.map f).length = xs.length := <span class="k">by</span>
+  induction xs <span class="k">with</span>
+  | nil =&gt; rfl
+  | cons x xs ih =&gt; simp [<span class="k">List</span>.map, <span class="k">List</span>.length, ih]</code></pre>
+    <p style="margin-top:16px;"><span class="mono" style="color:var(--frontier-ink)">sorry</span> is a hole — a placeholder that admits any goal so you can sketch a proof's shape and fill gaps later. Lean warns loudly while one remains, because the proof isn't actually done.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>The crypto-relevant layer: BitVec</h2>
+      <p class="sub">Fixed-width machine words — exactly what SHA-256 is built from — and where brute force stops and SAT begins.</p>
+      <p><span class="mono">BitVec 32</span> gives you 32-bit words with wraparound arithmetic: modular add, XOR/AND/NOT, rotation and shift. SHA-256's whole primitive layer is a few lines, and it's a natural bridge from this primer into the formalization survey.</p>
+    </div>
+    <div class="filetag">Primer/BitVec.lean — SHA-256's building blocks, verbatim</div>
+    <pre><code><span class="k">def</span> rotr (x : <span class="k">BitVec</span> <span class="l">32</span>) (n : <span class="k">Nat</span>) : <span class="k">BitVec</span> <span class="l">32</span> :=
+  (x &gt;&gt;&gt; n) ||| (x &lt;&lt;&lt; (<span class="l">32</span> - n))
+
+<span class="k">def</span> Ch     (x y z : <span class="k">BitVec</span> <span class="l">32</span>) := (x &amp;&amp;&amp; y) ^^^ ((~~~x) &amp;&amp;&amp; z)
+<span class="k">def</span> Maj    (x y z : <span class="k">BitVec</span> <span class="l">32</span>) := (x &amp;&amp;&amp; y) ^^^ (x &amp;&amp;&amp; z) ^^^ (y &amp;&amp;&amp; z)
+<span class="k">def</span> Sigma0 (x : <span class="k">BitVec</span> <span class="l">32</span>) := rotr x <span class="l">2</span> ^^^ rotr x <span class="l">13</span> ^^^ rotr x <span class="l">22</span>
+
+<span class="c">-- ALL 256 eight-bit words: decide can brute-force this</span>
+<span class="k">example</span> : ∀ x : <span class="k">BitVec</span> <span class="l">8</span>, x ^^^ x = <span class="l">0</span>#<span class="l">8</span> := <span class="k">by</span> decide
+
+<span class="c">-- the SAME over 32 bits is 2^32 cases — decide is hopeless.</span>
+<span class="c">-- import Std.Tactic.BVDecide, then this solves instantly:</span>
+<span class="c">--   example (x : BitVec 32) : x ^^^ x = 0#32 := by bv_decide</span>
+<span class="c">-- (bitblast to SAT + check an LRAT certificate — no enumeration)</span></code></pre>
+    <div class="callout" style="margin-top:18px;">
+      <strong>Why this matters for the survey.</strong> <span class="mono">bv_decide</span> — verified bitblasting with a Lean-checked LRAT certificate — is the reason Lean is now a strong <em>platform</em> for bit-level crypto proofs, even though it hasn't yet produced a software SHA-256 correctness proof.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>Verifying properties of your own projects</h2>
+      <p class="sub">What Lean can and can't do for your code — set expectations correctly.</p>
+      <p>Lean is <strong>excellent</strong> for proving properties of pure functions, data-structure invariants, and math-heavy kernels that you <strong>model or re-implement in Lean</strong>. It is <strong>not</strong> a push-button verifier for an arbitrary existing Rust/Python/C repo — that's the domain of SMT-backed tools (Dafny, Why3) or model checkers (TLA+). The productive loop:</p>
+      <ol class="steps">
+        <li><strong>Model</strong> the pure core of your algorithm as Lean functions (or re-implement it directly).</li>
+        <li><strong>State</strong> the properties you care about as <span class="mono">theorem</span>s.</li>
+        <li><strong>Prove</strong> them — automation first (<span class="mono">simp</span> / <span class="mono">omega</span> / <span class="mono">decide</span>), hand-guiding only the rest. <span class="mono">#eval</span> gives a fast spot-check loop while you work.</li>
+      </ol>
+    </div>
+    <div class="filetag">Primer/Spec.lean — a fast implementation proved equal to a reference model</div>
+    <pre><code><span class="k">def</span> sumTo : <span class="k">Nat</span> → <span class="k">Nat</span>                <span class="c">-- reference model</span>
+  | <span class="l">0</span>     =&gt; <span class="l">0</span>
+  | n + <span class="l">1</span> =&gt; (n + <span class="l">1</span>) + sumTo n
+
+<span class="k">def</span> sumToAcc : <span class="k">Nat</span> → <span class="k">Nat</span> → <span class="k">Nat</span>       <span class="c">-- "optimized" tail-recursive version</span>
+  | <span class="l">0</span>,     acc =&gt; acc
+  | n + <span class="l">1</span>, acc =&gt; sumToAcc n (acc + (n + <span class="l">1</span>))
+
+<span class="k">theorem</span> sumTo_correct (n : <span class="k">Nat</span>) : sumToAcc n <span class="l">0</span> = sumTo n := <span class="k">by</span>
+  simp [sumToAcc_eq]              <span class="c">-- via a generalized accumulator lemma</span></code></pre>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>Cookbook &amp; running it</h2>
+      <p class="sub">Copy-paste recipes, then the two commands that check everything.</p>
+    </div>
+    <div class="recipes">
+      <div class="recipe"><div class="rt">Evaluate an expression</div><code>#eval (List.range 10).map (· * 2)</code></div>
+      <div class="recipe"><div class="rt">Check a type without running</div><code>#check List.map</code></div>
+      <div class="recipe"><div class="rt">Prove by computation</div><code>example : 2 + 2 = 4 := by rfl</code></div>
+      <div class="recipe"><div class="rt">Prove a decidable fact</div><code>example : 7 * 6 = 42 := by decide</code></div>
+      <div class="recipe"><div class="rt">Linear arithmetic</div><code>example (a b : Nat) :
+  a + b = b + a := by omega</code></div>
+      <div class="recipe"><div class="rt">32-bit words over all inputs</div><code>-- import Std.Tactic.BVDecide
+by bv_decide</code></div>
+    </div>
+    <h3>Build = verification</h3>
+    <p>There is no separate test step: a clean build <em>is</em> the proof that every theorem goes through.</p>
+    <pre><code><span class="c"># type-check ALL chapters (= check all proofs)</span>
+lake build
+
+<span class="c"># run one chapter, printing its #eval / #check output</span>
+lake env lean Primer/Basics.lean</code></pre>
+    <div class="callout" style="border-left-color:var(--accent);margin-top:18px;">
+      <strong>Biggest ergonomic upgrade:</strong> open the project in VS Code with the Lean 4 extension. The live <strong>infoview</strong> — the goal state updating as you move your cursor through a proof — is the single largest jump over the command line.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="col">
+      <p>Companion to the <strong>SHA-256 formalization survey</strong>. Full prose and the four runnable chapters (<span class="mono">Basics</span>, <span class="mono">Proofs</span>, <span class="mono">BitVec</span>, <span class="mono">Spec</span>) live under <span class="mono">primer/</span> in the repository and build clean on Lean 4.33 with no external dependencies.</p>
+    </div>
+  </div>
+</footer>
