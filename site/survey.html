@@ -1,0 +1,427 @@
+<style>
+  :root {
+    /* light — cool slate-teal, chosen neutrals with a teal bias */
+    --ground: #f1f5f4;
+    --surface: #ffffff;
+    --surface-2: #e9efed;
+    --ink: #14201f;
+    --ink-2: #33423f;
+    --muted: #5c6b68;
+    --line: #d6dedb;
+    --line-2: #c3cfcc;
+    --accent: #0b7a6e;      /* verification teal — "settled / proved" */
+    --accent-ink: #075c53;
+    --frontier: #b4530a;    /* amber — "open / unformalized frontier" */
+    --frontier-ink: #8a3f06;
+    --settled-bg: rgba(11,122,110,0.08);
+    --frontier-bg: rgba(180,83,10,0.09);
+    --shadow: 0 1px 2px rgba(20,32,31,0.04), 0 8px 24px rgba(20,32,31,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0c1312;
+      --surface: #111b19;
+      --surface-2: #16221f;
+      --ink: #e7edeb;
+      --ink-2: #c2cecb;
+      --muted: #90a29e;
+      --line: #22302d;
+      --line-2: #2c3d39;
+      --accent: #40b8a8;
+      --accent-ink: #6fd0c2;
+      --frontier: #e0954f;
+      --frontier-ink: #f0b585;
+      --settled-bg: rgba(64,184,168,0.10);
+      --frontier-bg: rgba(224,149,79,0.11);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0c1312;
+    --surface: #111b19;
+    --surface-2: #16221f;
+    --ink: #e7edeb;
+    --ink-2: #c2cecb;
+    --muted: #90a29e;
+    --line: #22302d;
+    --line-2: #2c3d39;
+    --accent: #40b8a8;
+    --accent-ink: #6fd0c2;
+    --frontier: #e0954f;
+    --frontier-ink: #f0b585;
+    --settled-bg: rgba(64,184,168,0.10);
+    --frontier-bg: rgba(224,149,79,0.11);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  .col { max-width: 720px; }
+
+  /* ---- header ---- */
+  header.top {
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--surface), var(--ground));
+  }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .eyebrow::before {
+    content: ""; width: 22px; height: 1px; background: var(--accent); display: inline-block;
+  }
+  h1 {
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: 16px 0 10px;
+    text-wrap: balance;
+    font-weight: 680;
+  }
+  .lede { font-size: clamp(17px, 2.2vw, 20px); color: var(--ink-2); max-width: 680px; margin: 0; text-wrap: pretty; }
+  .meta { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 13px; }
+  .meta .mono { color: var(--muted); }
+
+  section { padding: 52px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
+  h2 {
+    font-size: clamp(22px, 3vw, 28px);
+    letter-spacing: -0.015em;
+    margin: 0 0 6px;
+    font-weight: 660;
+    text-wrap: balance;
+  }
+  h2 .num { color: var(--accent); font-family: ui-monospace, Menlo, monospace; font-size: 0.62em; vertical-align: 0.22em; margin-right: 12px; font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 26px; font-size: 15px; }
+  h3 { font-size: 18px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  p { margin: 0 0 14px; }
+  a { color: var(--accent-ink); text-underline-offset: 2px; text-decoration-color: var(--line-2); }
+  a:hover { text-decoration-color: var(--accent); }
+  strong { font-weight: 640; color: var(--ink); }
+
+  /* ---- summary stat row ---- */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 30px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 18px 16px; box-shadow: var(--shadow);
+  }
+  .stat .k { font-family: ui-monospace, Menlo, monospace; font-size: clamp(20px, 3vw, 26px); font-weight: 640; letter-spacing: -0.01em; }
+  .stat .k.none { color: var(--frontier); }
+  .stat .k.some { color: var(--accent); }
+  .stat .l { font-size: 13.5px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+
+  /* ---- boundary map ---- */
+  .map {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0; align-items: stretch; margin-top: 8px;
+    border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .territory { padding: 22px 22px 24px; background: var(--surface); }
+  .territory.settled { background: var(--settled-bg); }
+  .territory.frontier { background: var(--frontier-bg); }
+  .territory .tag {
+    font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 7px; margin-bottom: 4px;
+  }
+  .territory.settled .tag { color: var(--accent-ink); }
+  .territory.frontier .tag { color: var(--frontier-ink); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .settled .dot { background: var(--accent); }
+  .frontier .dot { background: var(--frontier); }
+  .territory h3 { font-size: 16.5px; margin: 2px 0 12px; }
+  .pins { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pin {
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+    padding: 4px 9px; border-radius: 999px; border: 1px solid var(--line-2);
+    background: var(--surface); color: var(--ink-2);
+  }
+  .settled .pin { border-color: rgba(11,122,110,0.35); }
+  .frontier .pin.empty {
+    border-style: dashed; color: var(--frontier-ink); background: transparent;
+    border-color: rgba(180,83,10,0.5);
+  }
+  .divider {
+    width: 3px; background: repeating-linear-gradient(180deg, var(--line-2) 0 8px, transparent 8px 16px);
+    position: relative;
+  }
+  .divider .lbl {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(0deg);
+    background: var(--surface); border: 1px solid var(--line-2); border-radius: 999px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); padding: 5px 8px; white-space: nowrap;
+  }
+  .map-note { font-size: 13.5px; color: var(--muted); margin-top: 14px; }
+
+  /* ---- thread cards ---- */
+  .threads { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px; box-shadow: var(--shadow);
+  }
+  .card .ct { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 8px; }
+  .card p { font-size: 14.5px; margin: 0 0 10px; color: var(--ink-2); }
+  .card p:last-child { margin-bottom: 0; }
+  .verdict {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600;
+    padding: 4px 10px; border-radius: 999px; margin-top: 2px;
+  }
+  .verdict.mature { color: var(--accent-ink); background: var(--settled-bg); }
+  .verdict.open { color: var(--frontier-ink); background: var(--frontier-bg); }
+
+  /* ---- opportunity list ---- */
+  .band { display: flex; align-items: baseline; gap: 12px; margin: 30px 0 14px; }
+  .band .badge {
+    font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 15px;
+    width: 30px; height: 30px; flex: none; display: grid; place-items: center;
+    border-radius: 8px; color: var(--surface); background: var(--ink);
+  }
+  .band.b .badge { background: var(--frontier); }
+  .band.a .badge { background: var(--accent); }
+  .band .bt { font-size: 17px; font-weight: 640; }
+  .band .bd { color: var(--muted); font-size: 14px; }
+
+  .opp { border: 1px solid var(--line); border-radius: 11px; background: var(--surface); padding: 16px 18px; margin-bottom: 10px; box-shadow: var(--shadow); }
+  .opp.top { border-color: var(--frontier); border-width: 1.5px; }
+  .opp .oh { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .opp .oid { font-family: ui-monospace, Menlo, monospace; font-weight: 640; color: var(--ink); font-size: 14.5px; }
+  .opp .oid .star { color: var(--frontier); margin-left: 8px; font-size: 12px; letter-spacing: 0.08em; }
+  .opp p { font-size: 14px; color: var(--ink-2); margin: 8px 0 0; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.04em;
+    padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line-2); color: var(--muted); white-space: nowrap;
+  }
+  .chip.eff { }
+  .chip.nov-high { color: var(--frontier-ink); border-color: rgba(180,83,10,0.4); background: var(--frontier-bg); }
+  .chip.nov-low { color: var(--accent-ink); border-color: rgba(11,122,110,0.35); background: var(--settled-bg); }
+
+  .callout {
+    background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0;
+    padding: 16px 18px; margin-top: 20px; font-size: 14.5px; color: var(--ink-2);
+  }
+  .callout strong { color: var(--ink); }
+
+  footer { padding: 40px 0 64px; color: var(--muted); font-size: 13px; }
+  footer .src { line-height: 1.7; }
+  footer code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--ink-2); }
+
+  @media (max-width: 760px) {
+    .stats { grid-template-columns: 1fr; }
+    .threads { grid-template-columns: 1fr; }
+    .map { grid-template-columns: 1fr; }
+    .divider { width: auto; height: 3px; background: repeating-linear-gradient(90deg, var(--line-2) 0 8px, transparent 8px 16px); }
+    .divider .lbl { position: static; transform: none; display: inline-block; margin: 10px 0; }
+  }
+</style>
+
+<header class="top">
+  <div class="wrap" style="padding-top:44px;padding-bottom:40px;">
+    <div class="eyebrow">Landscape survey · 2026-08-10</div>
+    <h1>Formalizing SHA-256 analysis in Lean: where the map ends</h1>
+    <p class="lede">The proof-assistant world has thoroughly verified that SHA-256 <em>implementations compute the spec</em> and that <em>constructions built on it are secure under assumptions</em>. It has never formally reasoned about <em>attacking or analyzing</em> the primitive. That gap — plus Lean's own catch-up debt — is the contribution boundary.</p>
+    <div class="meta">
+      <span class="mono">scope · Lean 4 / mathlib + adjacent ITPs</span>
+      <span class="mono">threads · SHA-2 impl · differential cryptanalysis · SAT/SMT · verified-crypto</span>
+      <span class="mono">method · web + repo inspection + local Lean experiments</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>The three facts that frame everything</h2>
+      <p class="sub">Read these before the detail. Each is the answer to a question people assume is already solved.</p>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="k none mono">0</div>
+        <div class="l">cryptographic hash functions in <strong>mathlib</strong>, Lean core, or Batteries — and no abstract "hash function" definition. Confirmed by code search.</div>
+      </div>
+      <div class="stat">
+        <div class="k some mono">circuit&nbsp;only</div>
+        <div class="l">Lean's strongest verified SHA-256 is a <strong>ZK-circuit</strong> compression gadget (<span class="mono">clean</span>). No Lean proof of a <em>software</em> SHA-256 vs FIPS spec — the Coq/VST result from 2015 has no Lean twin.</div>
+      </div>
+      <div class="stat">
+        <div class="k none mono">never</div>
+        <div class="l"><strong>Differential cryptanalysis</strong> has not been formalized in <em>any</em> proof assistant — no machine-checked differential probability, characteristics, or attack bounds anywhere.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>The boundary, drawn</h2>
+      <p class="sub">Two activities get conflated in "verifying SHA-256." One territory is densely settled across five ecosystems; the other is empty ground.</p>
+    </div>
+    <div class="map">
+      <div class="territory settled">
+        <div class="tag"><span class="dot"></span>Settled territory</div>
+        <h3>Implementation correctness &amp; provable security</h3>
+        <div class="pins">
+          <span class="pin">HACL* / F*</span>
+          <span class="pin">Coq · VST SHA-256</span>
+          <span class="pin">SAW · Cryptol</span>
+          <span class="pin">Jasmin · EasyCrypt</span>
+          <span class="pin">CryptHOL</span>
+          <span class="pin">Lean · LNSym (SHA-512)</span>
+          <span class="pin">Lean · clean (SHA-256 circuit)</span>
+        </div>
+      </div>
+      <div class="divider"><span class="lbl">the boundary</span></div>
+      <div class="territory frontier">
+        <div class="tag"><span class="dot"></span>Open frontier</div>
+        <h3>Cryptanalysis &amp; analysis of the primitive</h3>
+        <div class="pins">
+          <span class="pin empty">differential probability — unformalized</span>
+          <span class="pin empty">characteristics / trails — unformalized</span>
+          <span class="pin empty">collision-attack theory — unformalized</span>
+          <span class="pin empty">verified collision certificate — none</span>
+        </div>
+      </div>
+    </div>
+    <p class="map-note">Every settled-side result treats the <em>intrinsic strength</em> of SHA-256 — collision and preimage resistance — as an unproven assumption or an idealization. Nobody has crossed to "does this concrete attack work, and with what probability?"</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>Four threads, briefly</h2>
+      <p class="sub">What each research pass found. Full detail and citations live in <span class="mono">NOTES.md</span>.</p>
+    </div>
+    <div class="threads">
+      <div class="card">
+        <div class="ct">01 · SHA-2 in Lean</div>
+        <p>No hash in mathlib. But the <strong>BitVec</strong> primitive layer is mature and <strong>bv_decide</strong> (verified bitblasting, shipped Lean 4.12) dispatches SHA's <span class="mono">Ch/Maj/Σ/σ</span> identities instantly. Verified SHA-256 exists only at the <strong>circuit</strong> level (<span class="mono">clean</span>); LNSym proves <strong>SHA-512</strong> assembly, not 256.</p>
+        <span class="verdict mature"><span class="dot" style="background:var(--accent)"></span>strong platform, thin results</span>
+      </div>
+      <div class="card">
+        <div class="ct">02 · Differential cryptanalysis</div>
+        <p>Never formalized in Lean, Coq, Isabelle, or EasyCrypt. The classical theory (Lipmaa–Moriai, De&nbsp;Cannière–Rechberger, Nyberg–Knudsen) is <strong>rigorous paper</strong>; the search tools (CryptoSMT, AutoDiVer) are <strong>unverified</strong>. SHAttered had <strong>no machine-checked part</strong>.</p>
+        <span class="verdict open"><span class="dot" style="background:var(--frontier)"></span>wide open — first-of-its-kind ground</span>
+      </div>
+      <div class="card">
+        <div class="ct">03 · SAT / SMT in Lean</div>
+        <p><strong>bv_decide</strong> fits crypto's bit layer and never trusts the solver (LRAT certificate checked by a Lean-verified checker). But modular-addition-heavy goals blow up — a single SHA-512 lemma produced a <strong>207&nbsp;MB</strong> certificate. Workable pattern: normalize word-algebra first, bitblast only the residue.</p>
+        <span class="verdict mature"><span class="dot" style="background:var(--accent)"></span>capable, with a scaling ceiling</span>
+      </div>
+      <div class="card">
+        <div class="ct">04 · Adjacent verified crypto</div>
+        <p>HACL*, SAW, VST, CryptHOL, Jasmin all prove <strong>code = spec</strong> and <strong>secure-by-reduction</strong>. Verified SHA-2 ships in Firefox, the Linux kernel, and <strong>CPython ≥3.12</strong>. None of them does cryptanalysis — the boundary is deliberate and industry-wide.</p>
+        <span class="verdict mature"><span class="dot" style="background:var(--accent)"></span>mature, correctness-only</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>Where a volunteer could contribute</h2>
+      <p class="sub">A map, not a commitment — sizing and selection are a later call. Two kinds of opening: catch-up gaps well-trodden elsewhere, and analysis gaps untouched in every proof assistant. Chips encode rough <span class="mono">effort</span> and <span class="mono">novelty</span>.</p>
+    </div>
+
+    <div class="band a">
+      <div class="badge">A</div>
+      <div>
+        <div class="bt">Lean catch-up gaps</div>
+        <div class="bd">Reproduce known results in Lean. Useful to the ecosystem, lower novelty and risk.</div>
+      </div>
+    </div>
+    <div class="opp">
+      <div class="oh">
+        <span class="oid">A1 · Canonical Lean SHA-256 spec + core property proofs</span>
+        <span class="chips"><span class="chip eff">effort: small–med</span><span class="chip nov-low">novelty: low</span></span>
+      </div>
+      <p>Padding injectivity, message-schedule well-formedness, one-block vs multi-block agreement. Several unconnected spec copies exist today — a consistency-drift risk worth closing.</p>
+    </div>
+    <div class="opp">
+      <div class="oh">
+        <span class="oid">A2 · Optimized SHA-256 ⟷ reference-spec equivalence</span>
+        <span class="chips"><span class="chip eff">effort: med–large</span><span class="chip nov-low">novelty: low</span></span>
+      </div>
+      <p>The Appel-2015 / HACL* result Lean still lacks for SHA-256: an efficient implementation proved equal to the spec via <span class="mono">bv_decide</span> on bit-cores + induction across rounds. Best "ecosystem-useful" pick.</p>
+    </div>
+    <div class="opp">
+      <div class="oh">
+        <span class="oid">A3 · Merkle–Damgård scaffolding</span>
+        <span class="chips"><span class="chip eff">effort: small–med</span><span class="chip nov-low">novelty: low</span></span>
+      </div>
+      <p>Length-extension structure and padding lemmas that no Lean project currently has.</p>
+    </div>
+
+    <div class="band b">
+      <div class="badge">B</div>
+      <div>
+        <div class="bt">Analysis / cryptanalysis gaps</div>
+        <div class="bd">Untouched in <em>every</em> proof assistant. Any of these would be a first machine-checked result of its kind.</div>
+      </div>
+    </div>
+    <div class="opp top">
+      <div class="oh">
+        <span class="oid">B1 · Lipmaa–Moriai modular-addition differential probability <span class="star mono">◆ top probe</span></span>
+        <span class="chips"><span class="chip eff">effort: small</span><span class="chip nov-high">novelty: high</span></span>
+      </div>
+      <p>Formalize the log-time algorithm for the differential probability of addition mod 2³² (<span class="mono">xdp⁺ / adp⊕</span>) with a machine-checked correctness proof against the semantic definition over <span class="mono">BitVec 32</span>. Bounded, needs no mathlib, sits exactly where Lean is strongest, follows a clean paper proof — and would be first-of-its-kind. <strong>The recommended first bite.</strong></p>
+    </div>
+    <div class="opp">
+      <div class="oh">
+        <span class="oid">B2 · Verified difference-distribution-table (DDT) theory</span>
+        <span class="chips"><span class="chip eff">effort: small–med</span><span class="chip nov-high">novelty: high</span></span>
+      </div>
+      <p>Define an S-box's DDT, prove row-sum / differential-uniformity invariants, machine-check a real small S-box. Foundational DC infrastructure (block-cipher-facing, since SHA-256 has no S-box).</p>
+    </div>
+    <div class="opp">
+      <div class="oh">
+        <span class="oid">B3 · Verified characteristic-probability calculator</span>
+        <span class="chips"><span class="chip eff">effort: large</span><span class="chip nov-high">novelty: high</span></span>
+      </div>
+      <p>Formalize De&nbsp;Cannière–Rechberger generalized conditions and their propagation, proving computed characteristic probability sound. Effectively a verified core of AutoDiVer/CryptoSMT — or a Lean-checkable certificate such a tool could emit.</p>
+    </div>
+    <div class="opp">
+      <div class="oh">
+        <span class="oid">B4 · Verified collision / near-collision certificate checker</span>
+        <span class="chips"><span class="chip eff">effort: large</span><span class="chip nov-high">novelty: high</span></span>
+      </div>
+      <p>Bridge Lean's existing verified LRAT checker to an actual hash differential result — the missing link between "SHAttered gives two files" and a machine-checked "the attack search was sound." Depends on the certificate-size ceiling from thread 03.</p>
+    </div>
+
+    <div class="callout">
+      <strong>If any work is ever scoped, start with B1.</strong> It is small enough for one volunteer, needs only <span class="mono">BitVec</span>, has a clean correctness proof to follow, and lands on the exact primitive layer where Lean's tooling is strongest — while being a genuine first. A2 is the alternative if the goal is ecosystem-useful rather than research-novel.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="col">
+      <p style="color:var(--ink-2);font-size:14px;"><strong>Caveat.</strong> The "first-ever" claims rest on web search plus abstract/PDF reads — not on cloning and grepping mathlib and the Coq &amp; Isabelle AFP repositories directly. That grep should be done before publishing any "first" claim.</p>
+      <p class="src"><strong>Key sources.</strong>
+        Lean: <code>leanprover/LNSym</code> · <code>Verified-zkEVM/clean</code> · <code>ethereum/cryptography-specs</code> · bv_decide (Lean 4.12; OOPSLA'25, 10.1145/3763167) · lean-smt (arXiv 2505.15796) · ePrint 2024/1880.
+        Cryptanalysis: Lipmaa–Moriai (FSE 2001) · De&nbsp;Cannière–Rechberger (ASIACRYPT 2006) · Beyne–Rijmen (ePrint 2022/837) · AutoDiVer (ePrint 2025/185) · EasyBC (POPL 2024) · SHAttered (ePrint 2017/190).
+        Adjacent: Appel SHA-256 (TOPLAS 2015) · HACL* (CCS 2017) · EverCrypt (S&amp;P 2020) · CryptHOL (J. Cryptology 2019) · Formosa SHA-3 (CCS 2019).
+      </p>
+    </div>
+  </div>
+</footer>
