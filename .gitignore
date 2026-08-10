@@ -1,0 +1,8 @@
+# Lean / Lake build output (treated as build artifacts, not source)
+/primer/.lake/
+**/.lake/
+*.olean
+*.ilean
+*.c
+# Scratch
+scratchpad/
