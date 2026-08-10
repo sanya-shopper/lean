@@ -14,12 +14,15 @@ Two things, done in parallel:
 
 | Path | What it is |
 |------|------------|
-| `NOTES.md` | The survey: findings from four research threads + a ranked contribution-boundary map. **Start here.** |
+| `NOTES.md` | The survey: findings from research threads + a ranked contribution-boundary map, including a retrospective (§6) on formalizing what broke MD5/SHA-1. **Start here.** |
+| `lean-primer.tex` / `lean-primer.pdf` | **The canonical primer**: a typeset 8-page PDF (source + output). Build/test with `tools/build-primer.sh`. |
+| `refs/` | Local copies of freely-available Lean manuals/papers + `lean-refs.bib` (see `refs/README.md` for provenance). |
 | `primer/` | A `lake` project that builds clean on Lean 4.33 with **no mathlib**. |
-| `primer/PRIMER.md` | Conceptual primer — Lean vs TLA+ vs Haskell, the proof experience, where Lean fits for verifying your own code. |
+| `primer/PRIMER.md` | Markdown mirror of the primer (the PDF is canonical). |
 | `primer/README.md` | Build/run instructions + cookbook recipes. |
-| `primer/Primer/*.lean` | Four type-checked chapters: `Basics`, `Proofs`, `BitVec` (SHA-256 primitive layer), `Spec` (verify-your-own-code workflow). |
+| `primer/Primer/*.lean` | Six type-checked chapters: `Basics`, `Proofs`, `BitVec` (SHA-256 primitive layer), `Spec` (verify-your-own-code), `Diff` (difference algebra), `Josephus` (a proved closed-form theorem). |
 | `site/` | Source for the two published artifact pages. |
+| `tools/build-primer.sh` | Builds `lean-primer.pdf` and unit-tests the build (clean LaTeX, references resolved, no `??`). |
 
 ## Published artifacts
 

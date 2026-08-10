@@ -4,6 +4,12 @@
 never used an interactive theorem prover. Companion runnable examples live in
 `Primer/*.lean`; see `README.md` to build and run them.*
 
+> **The canonical, expanded version of this primer is the typeset PDF**
+> (`../lean-primer.pdf`, built from `../lean-primer.tex`): it adds a
+> proof-checking diagram, worked code throughout, a section on Lean's C FFI and
+> editor support, the proved Josephus example, and a cited bibliography. This
+> Markdown is the lighter mirror.
+
 ## 1. What Lean 4 actually is
 
 Lean 4 is two things wearing one coat: a **dependently-typed functional
@@ -30,6 +36,30 @@ syntax sugar — runs *outside* the kernel and ultimately emits a term the kerne
 re-checks. So you can use elaborate, even buggy, automation without endangering
 soundness: a wrong proof produces a term the kernel rejects. The trust you must
 extend is limited to that small piece, not the vast surrounding toolchain.
+
+To make "dependently-typed functional programming language" concrete: the
+functional half is ordinary functions, recursion, and algebraic data types,
+
+```lean
+def fib : Nat → Nat
+  | 0 => 0
+  | 1 => 1
+  | n + 2 => fib n + fib (n + 1)
+```
+
+and the dependent half lets a *type mention a value*, so the type-checker (not a
+runtime check) enforces, e.g., that `Vector.append : Vector α m → Vector α n →
+Vector α (m + n)` really does produce a vector of length `m + n`. Because types
+can talk about values, a type can *be* a theorem — and proving it means building
+a term of that type, which the kernel then checks:
+
+```lean
+theorem two_plus_two : 2 + 2 = 4 := by rfl        -- `by …` runs tactics that
+theorem succ_gt (n : Nat) : n < n + 1 := by omega  -- assemble the proof term
+```
+
+That is all "theorem prover" means operationally: **proving = constructing a
+term; checking = type-checking that term** against the proposition-as-type.
 
 ## 2. Lean vs. TLA+
 

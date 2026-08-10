@@ -129,8 +129,46 @@
     <div class="col">
       <h2>What Lean actually is</h2>
       <p class="sub">Two tools in one coat, unified by a single idea.</p>
-      <p>Lean 4 is a <strong>dependently-typed functional programming language</strong> and an <strong>interactive theorem prover</strong> — the same language for both. The link is the <strong>Curry–Howard correspondence</strong>: a proposition <em>is</em> a type, a proof <em>is</em> a term (a program) of that type, and so <strong>type-checking is proof-checking</strong>. A wrong proof is simply a term that fails to type-check.</p>
-      <p>What you trust is a <strong>small, audited kernel</strong> that only verifies terms against their types. Every tactic, every piece of automation — however elaborate or buggy — must ultimately emit a term the kernel re-checks. That is why you can lean on powerful automation without risking soundness.</p>
+      <p>Lean 4 is a <strong>dependently-typed functional programming language</strong> and an <strong>interactive theorem prover</strong> — the same language for both.</p>
+    </div>
+    <p class="sub" style="margin-top:6px">The <strong>functional-programming</strong> half looks like any ML/Haskell descendant — definitions, pattern matching, recursion, algebraic data types:</p>
+    <div class="filetag">Primer/Basics.lean</div>
+    <pre><code><span class="k">def</span> double (n : <span class="k">Nat</span>) : <span class="k">Nat</span> := n + n        <span class="c">-- a function Nat → Nat</span>
+
+<span class="k">def</span> fib : <span class="k">Nat</span> → <span class="k">Nat</span>                       <span class="c">-- recursion + pattern matching</span>
+  | <span class="l">0</span> =&gt; <span class="l">0</span>
+  | <span class="l">1</span> =&gt; <span class="l">1</span>
+  | n + <span class="l">2</span> =&gt; fib n + fib (n + <span class="l">1</span>)
+
+#eval fib <span class="l">10</span>                             <span class="c">-- 55  (#eval runs the code)</span></code></pre>
+    <p class="sub" style="margin-top:18px">The <strong>dependently-typed</strong> half is the part with no Haskell analogue: a <em>type may mention a value</em>. A vector's length lives in its type, so the <em>type-checker</em> — not a runtime check — enforces the sizes:</p>
+    <pre><code><span class="c">-- `Vector α n` is a list of α whose length n is part of the type.</span>
+<span class="k">example</span> : <span class="k">Vector</span> <span class="k">Nat</span> <span class="l">3</span> := #v[<span class="l">10</span>, <span class="l">20</span>, <span class="l">30</span>]     <span class="c">-- ok</span>
+<span class="c">-- example : Vector Nat 3 := #v[10, 20]      -- TYPE ERROR: length 2 ≠ 3</span>
+
+<span class="c">-- append's type PROMISES the output length is the sum of the inputs':</span>
+#check (<span class="k">Vector</span>.append : <span class="k">Vector</span> α m → <span class="k">Vector</span> α n → <span class="k">Vector</span> α (m + n))</code></pre>
+    <div class="col">
+      <p style="margin-top:18px">Because a type can depend on values, a type can also <em>encode a mathematical statement</em> — and that is exactly the bridge to the theorem-prover half.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>What "theorem prover" means, concretely</h2>
+      <p class="sub">Proving = building a term; checking = type-checking that term.</p>
+      <p>By Curry–Howard a <strong>proposition is a type</strong> and a <strong>proof is a term of that type</strong>. So proving <span class="mono">P</span> means <em>constructing a value whose type is <span class="mono">P</span></em>, and checking a proof is the same thing a compiler already does — verifying a term has the type it claims:</p>
+    </div>
+    <div class="filetag">Primer/Proofs.lean</div>
+    <pre><code><span class="c">-- The proposition `2 + 2 = 4` is a type; `rfl` builds a term inhabiting it.</span>
+<span class="k">theorem</span> two_plus_two : <span class="l">2</span> + <span class="l">2</span> = <span class="l">4</span> := <span class="k">by</span> rfl
+
+<span class="c">-- `∀ n, n &lt; n + 1` is a (function) type; the proof is a function `omega` builds.</span>
+<span class="k">theorem</span> succ_gt (n : <span class="k">Nat</span>) : n &lt; n + <span class="l">1</span> := <span class="k">by</span> omega</code></pre>
+    <div class="col">
+      <p style="margin-top:16px">When Lean says it <em>proved</em> something, it means: a term was constructed and a <strong>small, fixed kernel</strong> (a few thousand lines) confirmed it inhabits the proposition's type. Tactics and automation live <em>outside</em> the kernel, so a buggy tactic can't produce a false theorem — whatever it emits must still pass the kernel. The trusted base is the kernel alone, not the toolchain around it. A proof can also contain <span class="mono" style="color:var(--frontier-ink)">sorry</span>, an explicit hole you fill later; Lean warns while any remains.</p>
     </div>
   </div>
 </section>
@@ -187,6 +225,31 @@
       </table>
     </div>
     <p style="font-size:14px;color:var(--muted);margin-top:14px;">Lean has <span class="mono">#eval</span> and <span class="mono">decide</span>/<span class="mono">native_decide</span> for bounded, computational checks — which can <em>feel</em> a little model-checker-ish on finite decidable props — but that is evaluating a decision procedure, not exploring a temporal state space.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>Is Lean general-purpose? IO, data, and C</h2>
+      <p class="sub">Yes — and it goes both ways across the C boundary.</p>
+      <p>Lean 4 is a genuine general-purpose language, not a proof-only toy. It <strong>compiles to C</strong> then native code, has an <span class="mono">IO</span> monad for real input/output, ships arrays, hash maps, strings and <span class="mono">ByteArray</span> for data manipulation, and is substantial enough that <strong>the Lean compiler and much of its standard library are written in Lean itself</strong>. So it is suitable for library-building and data/IO tools.</p>
+    </div>
+    <div class="filetag">a real program, and both directions of C interop</div>
+    <pre><code><span class="k">def</span> main : <span class="k">IO</span> Unit := <span class="k">do</span>
+  <span class="k">let</span> line ← (← <span class="k">IO</span>.getStdin).getLine
+  <span class="k">IO</span>.println s!<span class="l">"you said: {line.trim}"</span>   <span class="c">-- string interpolation</span>
+
+<span class="c">-- Call C FROM Lean: bind a Lean decl to an external C symbol.</span>
+@[<span class="k">extern</span> <span class="l">"lean_sqrt"</span>] <span class="k">opaque</span> cSqrt (x : <span class="k">Float</span>) : <span class="k">Float</span>
+
+<span class="c">-- Call Lean FROM C: export under a C-callable name (link libleanshared).</span>
+@[<span class="k">export</span> my_add] <span class="k">def</span> myAdd (a b : <span class="k">Nat</span>) : <span class="k">Nat</span> := a + b</code></pre>
+    <div class="col">
+      <p style="margin-top:16px"><strong>Both directions work:</strong> <span class="mono">@[extern]</span> calls C from Lean; <span class="mono">@[export]</span> makes a Lean function C-callable. The one caveat is the <strong>runtime</strong>: compiled Lean is C <em>plus</em> the Lean runtime and its reference-counted object model (<span class="mono">lean_object*</span>), so embedding Lean links a runtime rather than dropping in a freestanding <span class="mono">.o</span>. It is not a no-runtime systems language.</p>
+      <h3 style="margin-top:22px">Editors — and Xcode</h3>
+      <p>Lean ships a <strong>language server</strong> (<span class="mono">lean --server</span>, speaking LSP), so any LSP client works. The most complete first-party integration is the VS Code extension; the mainstream non-VS-Code choices are <strong>Emacs</strong> (<span class="mono">lean4-mode</span>) and <strong>Neovim</strong> (<span class="mono">lean.nvim</span>), both with live infoview. <strong>There is no Lean plugin for Xcode</strong> — Xcode exposes no third-party-language/LSP extension point, and none exists as of 2026. Staying in the Apple toolchain means the command line (below) plus an LSP editor like Emacs or Neovim alongside it. Command-line only is fully viable — and how this project is checked.</p>
+    </div>
   </div>
 </section>
 
@@ -287,6 +350,7 @@
       <div class="recipe"><div class="rt">32-bit words over all inputs</div><code>-- import Std.Tactic.BVDecide
 by bv_decide</code></div>
     </div>
+    <p style="margin-top:16px">Want to run these without installing anything? Paste them into the <a href="https://live.lean-lang.org/" target="_blank" rel="noopener">official Lean web playground</a> — it runs Lean in the browser with a live infoview.</p>
     <h3>Build = verification</h3>
     <p>There is no separate test step: a clean build <em>is</em> the proof that every theorem goes through.</p>
     <pre><code><span class="c"># type-check ALL chapters (= check all proofs)</span>
@@ -295,7 +359,7 @@ lake build
 <span class="c"># run one chapter, printing its #eval / #check output</span>
 lake env lean Primer/Basics.lean</code></pre>
     <div class="callout" style="border-left-color:var(--accent);margin-top:18px;">
-      <strong>Biggest ergonomic upgrade:</strong> open the project in VS Code with the Lean 4 extension. The live <strong>infoview</strong> — the goal state updating as you move your cursor through a proof — is the single largest jump over the command line.
+      <strong>The infoview is the big ergonomic win.</strong> Lean's language server (<span class="mono">lean --server</span>, LSP) drives a live <strong>infoview</strong> showing the goal state as your cursor moves through a proof. Get it in <strong>Emacs</strong> (<span class="mono">lean4-mode</span>) or <strong>Neovim</strong> (<span class="mono">lean.nvim</span>) — there is no Xcode plugin — or skip the editor entirely and work from the command line as this project does.
     </div>
   </div>
 </section>
@@ -303,7 +367,7 @@ lake env lean Primer/Basics.lean</code></pre>
 <footer>
   <div class="wrap">
     <div class="col">
-      <p>Companion to the <strong>SHA-256 formalization survey</strong>. Full prose and the four runnable chapters (<span class="mono">Basics</span>, <span class="mono">Proofs</span>, <span class="mono">BitVec</span>, <span class="mono">Spec</span>) live under <span class="mono">primer/</span> in the repository and build clean on Lean 4.33 with no external dependencies.</p>
+      <p>Companion to the <strong>SHA-256 formalization survey</strong>. The canonical, expanded version of this primer is a typeset PDF (<span class="mono">lean-primer.pdf</span>, built from <span class="mono">lean-primer.tex</span>) with a proof-checking diagram, a worked Josephus proof, and a cited bibliography. The six runnable chapters (<span class="mono">Basics</span>, <span class="mono">Proofs</span>, <span class="mono">BitVec</span>, <span class="mono">Spec</span>, <span class="mono">Diff</span>, <span class="mono">Josephus</span>) live under <span class="mono">primer/</span> and build clean on Lean 4.33 with no external dependencies.</p>
     </div>
   </div>
 </footer>

@@ -413,6 +413,42 @@
   </div>
 </section>
 
+<section>
+  <div class="wrap">
+    <div class="col">
+      <h2>Retrospective: the hashes that already broke</h2>
+      <p class="sub">A sharper, more concrete target than analyzing unbroken SHA-256 — because the attacks are finished, published in detail, and full of reusable theorems nobody has machine-checked.</p>
+      <p>MD4, MD5, SHA-0 and SHA-1 fell to a coherent body of differential cryptanalysis — <strong>local collisions</strong> and disturbance vectors (Chabaud–Joux, SHA-0), <strong>message modification</strong> and signed differences (Wang et al., MD5/SHA-1), <strong>generalized conditions</strong> and automatic path search (De&nbsp;Cannière–Rechberger), through SHAttered and "SHA-1 is a Shambles." <strong>None of it has ever been machine-checked in any proof assistant.</strong> "Formalize the learning" is more tractable than SHA-256 precisely because the paths already exist and the collisions already exist.</p>
+      <p>The concrete, retrospective versions of the forward B-targets:</p>
+    </div>
+
+    <div class="opp">
+      <div class="oh"><span class="oid">R1 · Round-function spec + <span class="mono">bv_decide</span> collision/step verifier</span>
+        <span class="chips"><span class="chip eff">effort: easy</span><span class="chip nov-low">novelty: low</span></span></div>
+      <p>Formalize MD5/SHA-1 compression in <span class="mono">BitVec</span>; machine-check that the published SHAttered/Wang pairs collide and that individual step transitions hold. The necessary base, immediately shippable.</p>
+    </div>
+    <div class="opp">
+      <div class="oh"><span class="oid">R2 · Generalized-conditions domain + propagation soundness</span>
+        <span class="chips"><span class="chip eff">effort: low–med</span><span class="chip nov-high">novelty: high</span></span></div>
+      <p>Turn the De&nbsp;Cannière–Rechberger propagation rules into machine-checked transfer-function lemmas — a checker that <em>a published differential path is internally consistent</em>. Best value/effort; no prior machine-checked work.</p>
+    </div>
+    <div class="opp">
+      <div class="oh"><span class="oid">R3 · Local-collision probability + DV = codeword (SHA-0/1)</span>
+        <span class="chips"><span class="chip eff">effort: med</span><span class="chip nov-high">novelty: high</span></span></div>
+      <p>The 𝔽₂ linear-code characterization plus a <strong>certified exact per-local-collision probability</strong> — via <span class="mono">decide</span>/reflection or the new certified #SAT (CPOG) pipeline. First theorem-grade probability in this line.</p>
+    </div>
+    <div class="opp top">
+      <div class="oh"><span class="oid">R5 · Soundness-of-method capstone <span class="star mono">◆ the honest one</span></span>
+        <span class="chips"><span class="chip eff">effort: med–high</span><span class="chip nov-high">novelty: high</span></span></div>
+      <p>"If the search returns a pair satisfying all path conditions, that pair is a genuine collision of the real compression function" — the method's soundness, explicitly <em>decoupled</em> from the heuristic complexity. Mostly integration of R1–R4, and the one statement whose truth rests on no unprovable heuristic.</p>
+    </div>
+
+    <div class="callout" style="border-left-color:var(--frontier)">
+      <strong>Do not attempt a machine-checked complexity bound (the 2<sup>63</sup>).</strong> It is not a theorem — it rests on condition <em>independence</em> and the <em>hypothesis of stochastic equivalence</em>, which are calibrated empirically, not proved. Any credible project frames its top goal as method <strong>soundness</strong>, never complexity. That distinction — provable soundness vs. estimated complexity — is itself the clearest thing a formalization would teach.
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="wrap">
     <div class="col">
