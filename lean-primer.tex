@@ -65,7 +65,7 @@
     {↦}{{$\mapsto$}}1 {⊕}{{$\oplus$}}1 {Σ}{{$\Sigma$}}1 {σ}{{$\sigma$}}1
     {∣}{{$\mid$}}1 {∈}{{$\in$}}1 {⊢}{{$\vdash$}}1 {²}{{\textsuperscript{2}}}1
     {³}{{\textsuperscript{3}}}1 {α}{{$\alpha$}}1 {β}{{$\beta$}}1 {γ}{{$\gamma$}}1
-    {←}{{$\leftarrow$}}1 {—}{{\textemdash}}1
+    {←}{{$\leftarrow$}}1 {—}{{\textemdash}}1 {…}{{\ldots}}1 {≈}{{$\approx$}}1
     {₀}{{\textsubscript{0}}}1 {₁}{{\textsubscript{1}}}1 {₂}{{\textsubscript{2}}}1
 }
 \newcommand{\code}[1]{\lstinline[basicstyle=\ttfamily]|#1|}
@@ -150,32 +150,73 @@ The link between the two halves is the \textbf{Curry--Howard correspondence}: a
 \emph{proposition} is a \emph{type}, and a \emph{proof} of it is a \emph{term}
 (a value) of that type. Proving $P$ therefore means \emph{constructing a term
 whose type is $P$}, and checking a proof is the same operation a compiler
-already performs---verifying that a term has the type it claims. Concretely:
+already performs---verifying that a term has the type it claims.
+
+\paragraph{An aside on \code{rfl}.} You will see \code{rfl} everywhere, so it is
+worth pinning down. It is the \emph{one} canonical proof that a thing equals
+itself: its type says \code{a = a} holds for every \code{a}. It proves a goal
+\code{x = y} exactly when \code{x} and \code{y} \emph{compute to the same
+value}---then, after evaluation, both sides are literally the same thing, and
+``$a = a$'' applies. So \code{2 + 2 = 4} is closed by \code{rfl} because
+\code{2 + 2} reduces to \code{4}; but \code{a + b = b + a} is \emph{not}, because
+the two sides do not reduce to a common form (there you reach for \code{omega}).
+
+\paragraph{A real proof, end to end.} Something less trivial than
+\code{2 + 2}: the sum of the first $n$ odd numbers is $n^2$. The proof is a
+genuine induction with a real algebraic step.
 
 \begin{lstlisting}
--- The proposition `2 + 2 = 4` is a type; `rfl` builds a term inhabiting it.
-theorem two_plus_two : 2 + 2 = 4 := by rfl
+def sumOdd : Nat → Nat
+  | 0 => 0
+  | n + 1 => sumOdd n + (2 * n + 1)     -- add the (n+1)-th odd number, 2n+1
 
--- `∀ n, n < n + 1` is a type (a function type); the proof is a function that,
--- given n, produces evidence. `omega` builds that term for us.
-theorem succ_gt (n : Nat) : n < n + 1 := by omega
-
--- A property of our own function, with an existential witness:
-theorem double_even (n : Nat) : ∃ k, double n = 2 * k :=
-  ⟨n, by unfold double; omega⟩
+theorem sumOdd_eq (n : Nat) : sumOdd n = n * n := by
+  induction n with
+  | zero => rfl                         -- base: sumOdd 0 = 0 = 0*0, by computation
+  | succ k ih =>
+      have h : (k + 1) * (k + 1) = k * k + 2 * k + 1 := by
+        simp only [Nat.succ_mul, Nat.mul_succ]; omega   -- the one nonlinear fact
+      simp only [sumOdd, ih, h]         -- k*k + (2*k+1) = k*k + 2*k + 1
+      omega
 \end{lstlisting}
 
-\noindent What does the machine actually guarantee? Every proof, however it was
-produced, is elaborated into a fully explicit term that is then re-checked by a
-small, fixed \textbf{kernel}---a few thousand lines whose only job is to verify
-that a term has its stated type. Automation, tactics, and syntactic conveniences
-all live \emph{outside} the kernel; a buggy tactic cannot produce a false
-theorem, because whatever it emits must still pass the kernel
-(\Cref{fig:pipeline}). So ``Lean proved it'' means: a term was constructed and
-the kernel confirmed it inhabits the proposition's type. The trusted base is the
-kernel alone, not the sprawling toolchain around it \cite{demoura-lean4}. A
-proof may also contain \code{sorry}, an explicit hole that admits any goal so you
-can sketch structure and fill gaps later---Lean warns loudly while any remains.
+\noindent The two cases are the two ways to build a \code{Nat}: \code{zero}
+(closed by \code{rfl}, since both sides compute to $0$) and \code{succ k}, where
+the \emph{induction hypothesis} \code{ih : sumOdd k = k * k} is available and we
+extend it by one step.
+
+\paragraph{What the system actually outputs.} A tactic block is only
+\emph{sugar}: the \code{by} script elaborates to an ordinary \emph{term}, and it
+is that term the kernel checks. You can print it. The trivial one is exactly what
+you would guess---the tactic \code{rfl} built the term \code{Eq.refl (2 + 2)}:
+
+\begin{lstlisting}
+theorem two_plus_two : 2 + 2 = 4 := by rfl
+#print two_plus_two
+-- theorem two_plus_two : 2 + 2 = 4 :=
+-- Eq.refl (2 + 2)
+\end{lstlisting}
+
+\noindent And the induction above is not magic either: it elaborates to a use of
+\code{Nat}'s recursor, with our two cases as its arguments (elided for brevity):
+
+\begin{lstlisting}
+#print sumOdd_eq
+-- theorem sumOdd_eq : ∀ (n : Nat), sumOdd n = n * n :=
+-- fun n => Nat.recAux (Eq.refl (sumOdd 0))    -- the `zero` case
+--            (fun k ih => …)                  -- the `succ` case, using ih
+--            n
+\end{lstlisting}
+
+\noindent So ``Lean proved it'' means: a term was constructed---by hand, or by a
+tactic on your behalf---and a small, fixed \textbf{kernel} (a few thousand lines)
+re-checked that the term has the stated type. Automation and tactics live
+\emph{outside} the kernel; a buggy tactic cannot produce a false theorem, because
+whatever it emits must still pass the kernel (\Cref{fig:pipeline}). The trusted
+base is the kernel alone, not the sprawling toolchain around it
+\cite{demoura-lean4}. A proof may also contain \code{sorry}, an explicit hole
+that admits any goal so you can sketch structure and fill gaps later---Lean warns
+loudly while any remains.
 
 \begin{figure}[t]
 \centering
@@ -426,7 +467,8 @@ equivalently ``$J(n)$ is the binary numeral of $n$ rotated left by one bit''
 (e.g.\ $13 = 1101_2 \mapsto 1011_2 = 11 = J(13)$). The bit-rotation reading is a
 direct callback to \code{rotr} in \Cref{sec:proofs}, which is why this problem is
 pleasantly close to the SHA-256 world. Here is the recurrence and the general
-theorem, both machine-checked in pure Lean (no library):
+theorem, both machine-checked in pure Lean (no library). The listing below is
+\textbf{what you type}---the definition and a tactic proof:
 
 \begin{lstlisting}
 def josephus : Nat → Nat
@@ -455,9 +497,30 @@ theorem josephus_pow (m : Nat) :
         rw [hk, josephus_odd (2 ^ m + l / 2) (by omega), ih (l / 2) hjm]; omega
 \end{lstlisting}
 
-\noindent The proof is a textbook induction on $m$ that splits on the parity of
-$\ell$ and steps down through the recurrence---exactly the \emph{Concrete
-Mathematics} argument, now checked by the kernel rather than by a careful reader.
+\noindent Everything after \code{:= by} is a script of \emph{tactics}---your
+instructions for building the proof, not the proof itself. \textbf{What Lean
+generates} from it is an ordinary term, which is what the kernel actually
+checks. Printing it (\code{\#print josephus\_pow}, trimmed here) shows the
+\code{induction} tactic became an application of \code{Nat}'s recursor, with your
+two cases as its arguments:
+
+\begin{lstlisting}
+-- WHAT LEAN GENERATES (the proof term the kernel checks) — abbreviated:
+theorem josephus_pow : ∀ (m l : Nat), l < 2 ^ m → josephus (2 ^ m + l) = 2*l + 1 :=
+fun m =>
+  Nat.recAux
+    (fun l hl => …)          -- the m = 0 case you wrote as `| zero => …`
+    (fun m ih l hl => …)     -- the m+1 case you wrote as `| succ m ih => …`
+    m
+-- (the real term fills each `…` with ~15 lines of Eq.mpr/congrArg/… plumbing)
+\end{lstlisting}
+
+\noindent You never write that term by hand---that is the whole point of tactic
+mode. But it exists, and the kernel re-checks it; the tactics are only a
+convenient way to produce it. The proof itself is a textbook induction on $m$
+that splits on the parity of $\ell$ and steps down through the recurrence---exactly
+the \emph{Concrete Mathematics} argument, now checked by the kernel rather than
+by a careful reader.
 The full file also machine-checks (over $1 \le n \le 2000$, via
 \code{native\_decide}) that the recurrence, the closed form, and the
 one-bit-rotation form agree. This is the kind of concrete, self-contained result

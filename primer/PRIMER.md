@@ -58,8 +58,36 @@ theorem two_plus_two : 2 + 2 = 4 := by rfl        -- `by …` runs tactics that
 theorem succ_gt (n : Nat) : n < n + 1 := by omega  -- assemble the proof term
 ```
 
+**About `rfl`** (you'll see it everywhere): it is the *one* canonical proof that
+a thing equals itself — its type says `a = a` holds for every `a`. It closes a
+goal `x = y` exactly when `x` and `y` *compute to the same value*, so `2 + 2 = 4`
+is closed by `rfl` (both reduce to `4`) but `a + b = b + a` is not (use `omega`).
+
+Something less trivial than `2 + 2` — the sum of the first `n` odd numbers is
+`n²`, by a genuine induction:
+
+```lean
+def sumOdd : Nat → Nat
+  | 0 => 0
+  | n + 1 => sumOdd n + (2 * n + 1)
+
+theorem sumOdd_eq (n : Nat) : sumOdd n = n * n := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+      have h : (k+1)*(k+1) = k*k + 2*k + 1 := by
+        simp only [Nat.succ_mul, Nat.mul_succ]; omega
+      simp only [sumOdd, ih, h]; omega
+```
+
 That is all "theorem prover" means operationally: **proving = constructing a
-term; checking = type-checking that term** against the proposition-as-type.
+term; checking = type-checking that term** against the proposition-as-type. The
+`by …` script is only sugar for building that term — you can print what it
+produced. The trivial one is `Eq.refl (2 + 2)`; the induction above elaborates to
+`Nat`'s recursor, `fun n => Nat.recAux (Eq.refl (sumOdd 0)) (fun k ih => …) n`,
+with your two cases as its arguments. You never write that term by hand — but the
+kernel re-checks it, which is why a buggy tactic can't sneak through a false
+theorem.
 
 ## 2. Lean vs. TLA+
 

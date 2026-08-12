@@ -159,16 +159,38 @@
     <div class="col">
       <h2>What "theorem prover" means, concretely</h2>
       <p class="sub">Proving = building a term; checking = type-checking that term.</p>
-      <p>By Curry–Howard a <strong>proposition is a type</strong> and a <strong>proof is a term of that type</strong>. So proving <span class="mono">P</span> means <em>constructing a value whose type is <span class="mono">P</span></em>, and checking a proof is the same thing a compiler already does — verifying a term has the type it claims:</p>
+      <p>By Curry–Howard a <strong>proposition is a type</strong> and a <strong>proof is a term of that type</strong>. So proving <span class="mono">P</span> means <em>constructing a value whose type is <span class="mono">P</span></em>, and checking a proof is the same thing a compiler already does — verifying a term has the type it claims.</p>
+      <p><strong>An aside on <span class="mono">rfl</span>,</strong> which you'll see everywhere: it is the <em>one</em> canonical proof that a thing equals itself — its type says <span class="mono">a = a</span> holds for every <span class="mono">a</span>. It closes a goal <span class="mono">x = y</span> exactly when <span class="mono">x</span> and <span class="mono">y</span> <em>compute to the same value</em> (so <span class="mono">2 + 2 = 4</span> is closed by <span class="mono">rfl</span>, since <span class="mono">2 + 2</span> reduces to <span class="mono">4</span>) — but <span class="mono">a + b = b + a</span> is not, since the sides don't reduce to a common form (there you use <span class="mono">omega</span>).</p>
+      <p>Something less trivial than <span class="mono">2 + 2</span>: <strong>the sum of the first n odd numbers is n²</strong>, proved by a genuine induction with a real algebraic step.</p>
     </div>
-    <div class="filetag">Primer/Proofs.lean</div>
-    <pre><code><span class="c">-- The proposition `2 + 2 = 4` is a type; `rfl` builds a term inhabiting it.</span>
-<span class="k">theorem</span> two_plus_two : <span class="l">2</span> + <span class="l">2</span> = <span class="l">4</span> := <span class="k">by</span> rfl
+    <div class="filetag">Primer/Proofs.lean — this type-checks</div>
+    <pre><code><span class="k">def</span> sumOdd : <span class="k">Nat</span> → <span class="k">Nat</span>
+  | <span class="l">0</span> =&gt; <span class="l">0</span>
+  | n + <span class="l">1</span> =&gt; sumOdd n + (<span class="l">2</span> * n + <span class="l">1</span>)    <span class="c">-- add the (n+1)-th odd number</span>
 
-<span class="c">-- `∀ n, n &lt; n + 1` is a (function) type; the proof is a function `omega` builds.</span>
-<span class="k">theorem</span> succ_gt (n : <span class="k">Nat</span>) : n &lt; n + <span class="l">1</span> := <span class="k">by</span> omega</code></pre>
+<span class="k">theorem</span> sumOdd_eq (n : <span class="k">Nat</span>) : sumOdd n = n * n := <span class="k">by</span>
+  induction n <span class="k">with</span>
+  | zero =&gt; rfl                        <span class="c">-- base: 0 = 0*0, by computation</span>
+  | succ k ih =&gt;
+      <span class="k">have</span> h : (k+<span class="l">1</span>)*(k+<span class="l">1</span>) = k*k + <span class="l">2</span>*k + <span class="l">1</span> := <span class="k">by</span>
+        simp only [<span class="k">Nat</span>.succ_mul, <span class="k">Nat</span>.mul_succ]; omega
+      simp only [sumOdd, ih, h]        <span class="c">-- uses the induction hypothesis ih</span>
+      omega</code></pre>
     <div class="col">
-      <p style="margin-top:16px">When Lean says it <em>proved</em> something, it means: a term was constructed and a <strong>small, fixed kernel</strong> (a few thousand lines) confirmed it inhabits the proposition's type. Tactics and automation live <em>outside</em> the kernel, so a buggy tactic can't produce a false theorem — whatever it emits must still pass the kernel. The trusted base is the kernel alone, not the toolchain around it. A proof can also contain <span class="mono" style="color:var(--frontier-ink)">sorry</span>, an explicit hole you fill later; Lean warns while any remains.</p>
+      <p style="margin-top:16px"><strong>What does the system actually output as "the proof"?</strong> A <span class="mono">by …</span> block is only sugar: it elaborates to an ordinary <em>term</em>, and it is that term the kernel checks. You can print it — and the trivial one is exactly what you'd guess (the tactic <span class="mono">rfl</span> built the term <span class="mono">Eq.refl (2 + 2)</span>):</p>
+    </div>
+    <div class="filetag">what Lean generates — #print</div>
+    <pre><code><span class="c">#print two_plus_two
+-- theorem two_plus_two : 2 + 2 = 4 :=
+-- Eq.refl (2 + 2)</span>
+
+<span class="c">#print sumOdd_eq        -- the induction became Nat's recursor:
+-- theorem sumOdd_eq : ∀ (n : Nat), sumOdd n = n * n :=
+-- fun n => Nat.recAux (Eq.refl (sumOdd 0))   -- the `zero` case
+--            (fun k ih => …)                 -- the `succ` case, using ih
+--            n</span></code></pre>
+    <div class="col">
+      <p style="margin-top:16px">You never write that term by hand — that's the point of tactics. But it exists, and a <strong>small, fixed kernel</strong> (a few thousand lines) re-checks it. Tactics live <em>outside</em> the kernel, so a buggy tactic can't produce a false theorem — whatever it emits must still pass the kernel. The trusted base is the kernel alone. A proof can also contain <span class="mono" style="color:var(--frontier-ink)">sorry</span>, an explicit hole you fill later; Lean warns while any remains.</p>
     </div>
   </div>
 </section>

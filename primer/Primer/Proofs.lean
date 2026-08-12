@@ -45,3 +45,25 @@ theorem twice_even (n : Nat) : ∃ k, twice n = 2 * k :=
 -- `sorry` is an accepted-but-unproven hole. Uncomment to see the warning:
 -- theorem hard_thing : ∀ n : Nat, n < n + 1 := sorry
 theorem succ_gt (n : Nat) : n < n + 1 := by omega
+
+/-
+A less trivial, end-to-end theorem: the sum of the first n odd numbers is n².
+    1 + 3 + 5 + ... + (2n-1) = n²
+The proof is a genuine induction with a real algebraic step, not a one-liner.
+-/
+def sumOdd : Nat → Nat
+  | 0 => 0
+  | n + 1 => sumOdd n + (2 * n + 1)      -- add the (n+1)-th odd number, 2n+1
+
+#eval (List.range 8).map sumOdd          -- [0, 1, 4, 9, 16, 25, 36, 49] = squares
+
+theorem sumOdd_eq (n : Nat) : sumOdd n = n * n := by
+  induction n with
+  | zero => rfl                          -- base: sumOdd 0 = 0 = 0*0, by computation
+  | succ k ih =>
+      -- the one non-linear fact, isolated so `omega` can finish:
+      have h : (k + 1) * (k + 1) = k * k + 2 * k + 1 := by
+        simp only [Nat.succ_mul, Nat.mul_succ]; omega
+      -- unfold one step, rewrite with the induction hypothesis `ih` and `h`:
+      simp only [sumOdd, ih, h]          -- k*k + (2*k+1) = k*k + 2*k + 1
+      omega
