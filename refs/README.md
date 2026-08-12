@@ -1,3 +1,5 @@
+(PDFs relocated 2026-08-12 to ../refs/lean/ -- sibling refs tree, local use only, per the projects-wide convention.)
+
 # Lean 4 reference materials
 
 Local copies of freely-available Lean 4 manuals, introductions, and papers.
