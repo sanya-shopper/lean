@@ -185,38 +185,39 @@ theorem sumOdd_eq (n : Nat) : sumOdd n = n * n := by
 the \emph{induction hypothesis} \code{ih : sumOdd k = k * k} is available and we
 extend it by one step.
 
-\paragraph{What the system actually outputs.} A tactic block is only
-\emph{sugar}: the \code{by} script elaborates to an ordinary \emph{term}, and it
-is that term the kernel checks. You can print it. The trivial one is exactly what
-you would guess---the tactic \code{rfl} built the term \code{Eq.refl (2 + 2)}:
+\paragraph{What the system generates.} A \code{by} block is a script; the proof
+is the \emph{term} it produces, which is what the kernel checks. Take the two above.
 
+\emph{You type:}
 \begin{lstlisting}
 theorem two_plus_two : 2 + 2 = 4 := by rfl
-#print two_plus_two
--- theorem two_plus_two : 2 + 2 = 4 :=
--- Eq.refl (2 + 2)
 \end{lstlisting}
-
-\noindent And the induction above is not magic either: it elaborates to a use of
-\code{Nat}'s recursor, with our two cases as its arguments (elided for brevity):
-
+\emph{Lean generates} (\texttt{\#print two\_plus\_two}):
 \begin{lstlisting}
-#print sumOdd_eq
--- theorem sumOdd_eq : ∀ (n : Nat), sumOdd n = n * n :=
--- fun n => Nat.recAux (Eq.refl (sumOdd 0))    -- the `zero` case
---            (fun k ih => …)                  -- the `succ` case, using ih
---            n
+Eq.refl (2 + 2)
 \end{lstlisting}
+\emph{Why it proves the theorem:} \code{Eq.refl} is the one constructor of
+equality, of type \code{a = a}. \code{Eq.refl (2 + 2)} therefore has type
+\code{2 + 2 = 2 + 2}---and since \code{2 + 2} and \code{4} reduce to the same
+value, that type \emph{is} \code{2 + 2 = 4}. The kernel confirms the typing.
 
-\noindent So ``Lean proved it'' means: a term was constructed---by hand, or by a
-tactic on your behalf---and a small, fixed \textbf{kernel} (a few thousand lines)
-re-checked that the term has the stated type. Automation and tactics live
-\emph{outside} the kernel; a buggy tactic cannot produce a false theorem, because
-whatever it emits must still pass the kernel (\Cref{fig:pipeline}). The trusted
-base is the kernel alone, not the sprawling toolchain around it
-\cite{demoura-lean4}. A proof may also contain \code{sorry}, an explicit hole
-that admits any goal so you can sketch structure and fill gaps later---Lean warns
-loudly while any remains.
+\medskip
+\emph{You type:} the \code{sumOdd\_eq} induction above. \emph{Lean generates}
+(\texttt{\#print sumOdd\_eq}, plumbing elided):
+\begin{lstlisting}
+fun n => Nat.recAux (Eq.refl (sumOdd 0))   -- the `zero` case
+           (fun k ih => …)                 -- the `succ` case, using ih
+           n
+\end{lstlisting}
+\emph{Why it proves the theorem:} \code{Nat.recAux} is induction on \code{Nat}
+as a function---give it a proof for \code{0} and a map from a proof for \code{k}
+to one for \code{k+1}, and it returns a proof for every \code{n}. Its type here
+is exactly \code{sumOdd n = n * n} for all \code{n}, which the kernel checks.
+
+\medskip\noindent The kernel---a small, fixed core (a few thousand lines)---is the
+only thing trusted; tactics live outside it, so a buggy tactic cannot force a
+false theorem past it (\Cref{fig:pipeline}) \cite{demoura-lean4}. A proof may also
+contain \code{sorry}, a hole that admits any goal; Lean warns while any remains.
 
 \begin{figure}[t]
 \centering

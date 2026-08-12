@@ -177,20 +177,10 @@
       simp only [sumOdd, ih, h]        <span class="c">-- uses the induction hypothesis ih</span>
       omega</code></pre>
     <div class="col">
-      <p style="margin-top:16px"><strong>What does the system actually output as "the proof"?</strong> A <span class="mono">by …</span> block is only sugar: it elaborates to an ordinary <em>term</em>, and it is that term the kernel checks. You can print it — and the trivial one is exactly what you'd guess (the tactic <span class="mono">rfl</span> built the term <span class="mono">Eq.refl (2 + 2)</span>):</p>
-    </div>
-    <div class="filetag">what Lean generates — #print</div>
-    <pre><code><span class="c">#print two_plus_two
--- theorem two_plus_two : 2 + 2 = 4 :=
--- Eq.refl (2 + 2)</span>
-
-<span class="c">#print sumOdd_eq        -- the induction became Nat's recursor:
--- theorem sumOdd_eq : ∀ (n : Nat), sumOdd n = n * n :=
--- fun n => Nat.recAux (Eq.refl (sumOdd 0))   -- the `zero` case
---            (fun k ih => …)                 -- the `succ` case, using ih
---            n</span></code></pre>
-    <div class="col">
-      <p style="margin-top:16px">You never write that term by hand — that's the point of tactics. But it exists, and a <strong>small, fixed kernel</strong> (a few thousand lines) re-checks it. Tactics live <em>outside</em> the kernel, so a buggy tactic can't produce a false theorem — whatever it emits must still pass the kernel. The trusted base is the kernel alone. A proof can also contain <span class="mono" style="color:var(--frontier-ink)">sorry</span>, an explicit hole you fill later; Lean warns while any remains.</p>
+      <p style="margin-top:16px"><strong>What the system generates.</strong> A <span class="mono">by</span> block is a script; the proof is the <em>term</em> it produces, and that term is what the kernel checks.</p>
+      <p style="margin:14px 0 4px"><em>You type</em> — <span class="mono">theorem two_plus_two : 2 + 2 = 4 := by rfl</span><br><em>Lean generates</em> (<span class="mono">#print two_plus_two</span>) — <span class="mono">Eq.refl (2 + 2)</span><br><em>Why it proves the theorem</em> — <span class="mono">Eq.refl</span> is the one constructor of equality, of type <span class="mono">a = a</span>. So <span class="mono">Eq.refl (2 + 2)</span> has type <span class="mono">2 + 2 = 2 + 2</span> — and since <span class="mono">2 + 2</span> and <span class="mono">4</span> reduce to the same value, that type <em>is</em> <span class="mono">2 + 2 = 4</span>. The kernel confirms the typing.</p>
+      <p style="margin:14px 0 4px"><em>You type</em> — the <span class="mono">sumOdd_eq</span> induction above.<br><em>Lean generates</em> (<span class="mono">#print sumOdd_eq</span>, plumbing elided) — <span class="mono">fun n =&gt; Nat.recAux (Eq.refl (sumOdd 0)) (fun k ih =&gt; …) n</span><br><em>Why it proves the theorem</em> — <span class="mono">Nat.recAux</span> is induction on <span class="mono">Nat</span> as a function: give it a proof for <span class="mono">0</span> and a map from a proof for <span class="mono">k</span> to one for <span class="mono">k+1</span>, and it returns a proof for every <span class="mono">n</span>. Its type is exactly <span class="mono">sumOdd n = n * n</span> for all <span class="mono">n</span>, which the kernel checks.</p>
+      <p style="margin-top:14px">The <strong>kernel</strong> — a small, fixed core — is the only thing trusted; tactics live outside it, so a buggy tactic can't force a false theorem past it. A proof may also contain <span class="mono" style="color:var(--frontier-ink)">sorry</span>, a hole that admits any goal; Lean warns while any remains.</p>
     </div>
   </div>
 </section>

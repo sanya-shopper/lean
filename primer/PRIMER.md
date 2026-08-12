@@ -81,13 +81,20 @@ theorem sumOdd_eq (n : Nat) : sumOdd n = n * n := by
 ```
 
 That is all "theorem prover" means operationally: **proving = constructing a
-term; checking = type-checking that term** against the proposition-as-type. The
-`by …` script is only sugar for building that term — you can print what it
-produced. The trivial one is `Eq.refl (2 + 2)`; the induction above elaborates to
-`Nat`'s recursor, `fun n => Nat.recAux (Eq.refl (sumOdd 0)) (fun k ih => …) n`,
-with your two cases as its arguments. You never write that term by hand — but the
-kernel re-checks it, which is why a buggy tactic can't sneak through a false
-theorem.
+term; checking = type-checking that term** against the proposition-as-type. A
+`by` block is a script; the proof is the term it produces:
+
+- *You type* `theorem two_plus_two : 2 + 2 = 4 := by rfl` → *Lean generates*
+  `Eq.refl (2 + 2)`. **Why it proves it:** `Eq.refl` has type `a = a`, so
+  `Eq.refl (2 + 2) : 2 + 2 = 2 + 2` — and since `2 + 2` and `4` reduce to the same
+  value, that type *is* `2 + 2 = 4`.
+- *You type* the `sumOdd_eq` induction → *Lean generates*
+  `fun n => Nat.recAux (Eq.refl (sumOdd 0)) (fun k ih => …) n`. **Why it proves
+  it:** `Nat.recAux` is induction as a function — a proof for `0` plus a map from
+  a proof for `k` to one for `k+1` yields a proof for every `n`.
+
+You never write those terms by hand, but the kernel re-checks them — which is why
+a buggy tactic can't sneak through a false theorem.
 
 ## 2. Lean vs. TLA+
 
