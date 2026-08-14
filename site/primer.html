@@ -176,6 +176,28 @@
         simp only [<span class="k">Nat</span>.succ_mul, <span class="k">Nat</span>.mul_succ]; omega
       simp only [sumOdd, ih, h]        <span class="c">-- uses the induction hypothesis ih</span>
       omega</code></pre>
+
+    <div style="border:1px solid var(--accent); border-radius:12px; overflow:hidden; margin-top:20px; box-shadow:var(--shadow);">
+      <div style="background:var(--accent); color:#fff; font-weight:640; font-size:14px; padding:9px 18px;">Reading a tactic proof as an ordinary one</div>
+      <div style="padding:16px 18px; background:var(--surface);">
+        <p style="margin-top:0; color:var(--ink-2); font-size:14.5px;">None of those tokens are "assume" or "therefore" — tactic mode is <em>imperative</em> (commands to a proof engine), and it names its routine steps after the automation that discharges them. But each tactic <em>is</em> a step of the textbook proof:</p>
+        <table style="border-collapse:collapse; width:100%; font-size:14px; margin:6px 0 14px;">
+          <tbody>
+            <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 12px 6px 0; vertical-align:top; white-space:nowrap;"><span class="mono" style="color:var(--accent-ink);">induction n</span></td><td style="padding:6px 0; color:var(--ink-2);">"by induction on n"; the two cases <span class="mono">zero</span> and <span class="mono">succ k</span>, with <span class="mono">ih</span> the hypothesis</td></tr>
+            <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 12px 6px 0; vertical-align:top; white-space:nowrap;"><span class="mono" style="color:var(--accent-ink);">rfl</span> <em>(zero)</em></td><td style="padding:6px 0; color:var(--ink-2);">base case: both sides compute to <span class="mono">0</span></td></tr>
+            <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 12px 6px 0; vertical-align:top; white-space:nowrap;"><span class="mono" style="color:var(--accent-ink);">simp only [sumOdd, ih, h]</span></td><td style="padding:6px 0; color:var(--ink-2);">unfold the <em>definition</em>, use the <em>hypothesis</em> <span class="mono">ih</span>, apply the <em>algebra</em> <span class="mono">h</span></td></tr>
+            <tr><td style="padding:6px 12px 6px 0; vertical-align:top; white-space:nowrap;"><span class="mono" style="color:var(--accent-ink);">omega</span></td><td style="padding:6px 0; color:var(--ink-2);">finish the leftover arithmetic</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--ink-2); font-size:14.5px; margin:0 0 10px;">Written as an explicit chain (Lean's <span class="mono">calc</span>), the <em>same</em> proof reads almost verbatim like the textbook argument <span class="mono">s(k+1) = s(k) + (2k+1) = k² + (2k+1) = (k+1)²</span>:</p>
+<pre><code><span class="k">calc</span> sumOdd (k + <span class="l">1</span>)
+    = sumOdd k + (<span class="l">2</span>*k+<span class="l">1</span>) := rfl              <span class="c">-- definition</span>
+  _ = k*k + (<span class="l">2</span>*k+<span class="l">1</span>)      := <span class="k">by</span> rw [ih]        <span class="c">-- induction hypothesis</span>
+  _ = (k+<span class="l">1</span>)*(k+<span class="l">1</span>)        := <span class="k">by</span> rw [h]; omega  <span class="c">-- algebra</span></code></pre>
+        <p style="color:var(--ink-2); font-size:14.5px; margin:12px 0 0;">And "by induction" is not a trusted keyword: it builds the term <span class="mono">Nat.recAux base step n</span>, an application of <span class="mono">Nat</span>'s induction principle — itself proved once, in the kernel, from how <span class="mono">Nat</span> is defined.</p>
+      </div>
+    </div>
+
     <div class="col">
       <p style="margin-top:16px"><strong>What the system generates.</strong> A <span class="mono">by</span> block is a script; the proof is the <em>term</em> it produces, and that term is what the kernel checks.</p>
       <p style="margin:14px 0 4px"><em>You type</em> — <span class="mono">theorem two_plus_two : 2 + 2 = 4 := by rfl</span><br><em>Lean generates</em> (<span class="mono">#print two_plus_two</span>) — <span class="mono">Eq.refl (2 + 2)</span><br><em>Why it proves the theorem</em> — <span class="mono">Eq.refl</span> is the one constructor of equality, of type <span class="mono">a = a</span>. So <span class="mono">Eq.refl (2 + 2)</span> has type <span class="mono">2 + 2 = 2 + 2</span> — and since <span class="mono">2 + 2</span> and <span class="mono">4</span> reduce to the same value, that type <em>is</em> <span class="mono">2 + 2 = 4</span>. The kernel confirms the typing.</p>

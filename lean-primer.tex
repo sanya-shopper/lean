@@ -22,6 +22,10 @@
 \addbibresource{refs/lean-refs.bib}
 \usepackage[colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accentdark]{hyperref}
 \usepackage{cleveref}
+\usepackage[most]{tcolorbox}
+\newtcolorbox{readbox}[1][]{colback=codebg, colframe=accent, boxrule=0.6pt,
+  arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt, title={#1},
+  coltitle=white, fonttitle=\bfseries\small, colbacktitle=accent}
 
 % ---- palette (matches the companion web pages) ----------------------------
 \definecolor{accent}{HTML}{0B7A6E}
@@ -184,6 +188,39 @@ theorem sumOdd_eq (n : Nat) : sumOdd n = n * n := by
 (closed by \code{rfl}, since both sides compute to $0$) and \code{succ k}, where
 the \emph{induction hypothesis} \code{ih : sumOdd k = k * k} is available and we
 extend it by one step.
+
+\begin{readbox}[Reading a tactic proof as an ordinary one]
+None of those tokens are ``assume'' or ``therefore''---tactic mode is
+\emph{imperative} (commands to a proof engine), and it names its routine steps
+after the automation that discharges them. But each tactic \emph{is} a step of
+the textbook proof:
+
+\smallskip
+\begin{tabular}{@{}l@{\hspace{1.4em}}p{7.2cm}@{}}
+\code{induction n} & ``by induction on $n$''; the two cases \code{zero} and
+\code{succ k}, with \code{ih} the hypothesis \\[2pt]
+\code{rfl} \emph{(zero)} & base case: both sides compute to $0$ \\[2pt]
+\code{simp only [sumOdd, ih, h]} & unfold the \emph{definition}, use the
+\emph{hypothesis} \code{ih}, apply the \emph{algebra} \code{h} \\[2pt]
+\code{omega} & finish the leftover arithmetic \\
+\end{tabular}
+
+\smallskip
+\noindent Written as an explicit chain (Lean's \code{calc}), the \emph{same}
+proof reads almost verbatim like the textbook argument
+$s(k{+}1) = s(k) + (2k{+}1) = k^2 + (2k{+}1) = (k{+}1)^2$:
+
+\begin{lstlisting}
+calc sumOdd (k + 1)
+    = sumOdd k + (2*k+1) := rfl              -- definition
+  _ = k*k + (2*k+1)      := by rw [ih]        -- induction hypothesis
+  _ = (k+1)*(k+1)        := by rw [h]; omega  -- algebra
+\end{lstlisting}
+
+\noindent And ``by induction'' is not a trusted keyword: it builds the term
+\code{Nat.recAux base step n}, an application of \code{Nat}'s induction
+principle---itself proved once, in the kernel, from how \code{Nat} is defined.
+\end{readbox}
 
 \paragraph{What the system generates.} A \code{by} block is a script; the proof
 is the \emph{term} it produces, which is what the kernel checks. Take the two above.

@@ -80,6 +80,32 @@ theorem sumOdd_eq (n : Nat) : sumOdd n = n * n := by
       simp only [sumOdd, ih, h]; omega
 ```
 
+> **Reading a tactic proof as an ordinary one.** None of those tokens are
+> "assume" or "therefore" — tactic mode is *imperative* (commands to a proof
+> engine), and it names its routine steps after the automation that discharges
+> them. But each tactic *is* a step of the textbook proof:
+>
+> | tactic | the sentence it performs |
+> |---|---|
+> | `induction n` | "by induction on n"; the two cases `zero` and `succ k`, with `ih` the hypothesis |
+> | `rfl` *(zero)* | base case: both sides compute to `0` |
+> | `simp only [sumOdd, ih, h]` | unfold the *definition*, use the *hypothesis* `ih`, apply the *algebra* `h` |
+> | `omega` | finish the leftover arithmetic |
+>
+> Written as an explicit chain (Lean's `calc`), the *same* proof reads almost
+> verbatim like the textbook argument `s(k+1) = s(k) + (2k+1) = k² + (2k+1) = (k+1)²`:
+>
+> ```lean
+> calc sumOdd (k + 1)
+>     = sumOdd k + (2*k+1) := rfl              -- definition
+>   _ = k*k + (2*k+1)      := by rw [ih]        -- induction hypothesis
+>   _ = (k+1)*(k+1)        := by rw [h]; omega  -- algebra
+> ```
+>
+> And "by induction" is not a trusted keyword: it builds the term
+> `Nat.recAux base step n`, an application of `Nat`'s induction principle —
+> itself proved once, in the kernel, from how `Nat` is defined.
+
 That is all "theorem prover" means operationally: **proving = constructing a
 term; checking = type-checking that term** against the proposition-as-type. A
 `by` block is a script; the proof is the term it produces:
