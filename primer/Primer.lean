@@ -5,3 +5,4 @@ import Primer.BitVec
 import Primer.Spec
 import Primer.Diff
 import Primer.Josephus
+import Primer.Probability
