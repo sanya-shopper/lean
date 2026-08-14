@@ -20,7 +20,8 @@ Two things, done in parallel:
 | `primer/` | A `lake` project that builds clean on Lean 4.33 with **no mathlib**. |
 | `primer/PRIMER.md` | Markdown mirror of the primer (the PDF is canonical). |
 | `primer/README.md` | Build/run instructions + cookbook recipes. |
-| `primer/Primer/*.lean` | Six type-checked chapters: `Basics`, `Proofs`, `BitVec` (SHA-256 primitive layer), `Spec` (verify-your-own-code), `Diff` (difference algebra), `Josephus` (a proved closed-form theorem). |
+| `primer/Primer/*.lean` | Seven type-checked chapters: `Basics`, `Proofs`, `BitVec` (SHA-256 primitive layer), `Spec` (verify-your-own-code), `Diff` (difference algebra), `Josephus` (a proved closed-form theorem), `Probability` (discrete probability by counting). |
+| `mathlib-tour/` | A separate mathlib-backed companion (pinned to mathlib v4.33.0) showing what mathlib buys: `ring`, `Finset` sums, √2 irrational, rational probability. Keeps `primer/` core-only. `.lake` (~6 GB) is git-ignored. |
 | `site/` | Source for the two published artifact pages. |
 | `tools/build-primer.sh` | Builds `lean-primer.pdf` and unit-tests the build (clean LaTeX, references resolved, no `??`). |
 

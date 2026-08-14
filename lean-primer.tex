@@ -623,14 +623,29 @@ glossed in \Cref{app:reference}.
 \textbf{mathlib} is the community's large, coherent library of formalized
 mathematics---algebra through analysis and beyond---with the lemmas and
 automation to match \cite{avigad-mil}. It is what you pull in when a proof rests
-on real mathematics; it is also a heavy dependency, which is why the examples
-here deliberately use none of it (core Lean plus its standard library,
-\emph{Batteries}, suffices for algorithmic and bit-level work). Good next steps:
-\emph{Theorem Proving in Lean~4} \cite{avigad-tpil4} for the proof language,
-\emph{Functional Programming in Lean} \cite{christiansen-fpil} for the
-programming side, and \emph{Mathematics in Lean} \cite{avigad-mil} for working
-with mathlib. The companion \texttt{primer/} project holds every example above as
-runnable, type-checked source.
+on real mathematics; it is also a heavy dependency (its prebuilt object cache is
+several gigabytes, and the first \code{import Mathlib} takes minutes). Everything
+in this primer \emph{deliberately} uses none of it---core Lean plus its standard
+library, \emph{Batteries}, is enough for algorithmic and bit-level work, and the
+project stays instant and offline. That is a choice, not a limitation: when a
+proof genuinely needs mathematics, you add \verb|require mathlib| to your
+\texttt{lakefile}, run \verb|lake exe cache get| to fetch the prebuilt library,
+and its full power is available.
+
+\paragraph{What it buys you.} The companion \texttt{mathlib-tour/} project makes
+the trade-off concrete. The one awkward step in \Cref{sec:prover}---proving
+$(k{+}1)^2 = k^2 + 2k + 1$ by hand with \code{simp only [Nat.succ\_mul,
+Nat.mul\_succ]; omega}---collapses to a single \code{ring}. It also states things
+core Lean cannot: an actual finite sum $\sum_{i<n}(2i+1) = n^2$, the irrationality
+of $\sqrt 2$, and dice probability as a genuine rational over a \code{Finset}
+rather than the integer counting the primer used to stay library-free.
+
+\paragraph{Where to go next.} \emph{Theorem Proving in Lean~4}
+\cite{avigad-tpil4} for the proof language, \emph{Functional Programming in Lean}
+\cite{christiansen-fpil} for the programming side, and \emph{Mathematics in Lean}
+\cite{avigad-mil} for working with mathlib. The companion \texttt{primer/} project
+holds every core-Lean example above as runnable, type-checked source, and
+\texttt{mathlib-tour/} holds the mathlib ones.
 
 % ---------------------------------------------------------------------------
 \section*{Glossary}

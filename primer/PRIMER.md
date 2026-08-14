@@ -216,13 +216,20 @@ tuned to work with them. It matters because serious mathematical proofs rest on
 mountains of prerequisite results; mathlib supplies them already proven and
 integrated, so you build on a foundation rather than reconstructing it.
 
-The tradeoff is weight. mathlib is a **large dependency** that takes time to
-build and pulls in a lot of structure. For small verification experiments —
-proving facts about your own data structures or a numeric kernel — you often do
-**not** need it; core Lean together with the standard library (Std / **Batteries**)
-is enough and far lighter. (The runnable examples in this primer use *no*
-mathlib for exactly this reason.) Pull mathlib in when your work genuinely leans
-on established mathematics.
+The tradeoff is weight. mathlib is a **large dependency** (its prebuilt object
+cache is several gigabytes; the first `import Mathlib` takes minutes). For small
+verification experiments — proving facts about your own data structures or a
+numeric kernel — you often do **not** need it; core Lean together with the
+standard library (Std / **Batteries**) is enough and far lighter. This primer's
+examples use *no* mathlib **by choice**, so the project builds in seconds and
+works offline — not because mathlib is unavailable. When a proof genuinely needs
+mathematics, add `require mathlib` to your `lakefile` and run `lake exe cache get`.
+
+The companion **`mathlib-tour/`** project shows what that buys: the primer's
+awkward `(k+1)² = k²+2k+1` step collapses to a single `ring`; you get real finite
+sums (`∑ i ∈ Finset.range n, (2*i+1) = n²`), the irrationality of √2, and dice
+probability as an actual rational over a `Finset` — none of which core Lean can
+state as cleanly.
 
 ## 6. Where Lean fits for verifying your own code
 
