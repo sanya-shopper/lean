@@ -371,6 +371,37 @@
 <section>
   <div class="wrap">
     <div class="col">
+      <h2>Illuminating examples: discrete probability</h2>
+      <p class="sub">Surprising facts become things the machine can <em>check</em>.</p>
+      <p>Over a finite, equally-likely sample space a probability is just <span class="mono">favorable / total</span> (two naturals), and "<span class="mono">p &gt; 1/2</span>" is the exact inequality <span class="mono">2 * favorable &gt; total</span> — no real numbers needed. <strong>Monty Hall:</strong> enumerate the nine <span class="mono">(car, firstPick)</span> games; switching wins exactly when your first pick was wrong, so 6/9 = 2/3.</p>
+    </div>
+    <div class="filetag">Primer/Probability.lean — this type-checks</div>
+<pre><code><span class="k">def</span> games : <span class="k">List</span> (<span class="k">Nat</span> × <span class="k">Nat</span>) :=          <span class="c">-- all 9 (car, pick) pairs</span>
+  [<span class="l">0</span>,<span class="l">1</span>,<span class="l">2</span>].flatMap (<span class="k">fun</span> car =&gt; [<span class="l">0</span>,<span class="l">1</span>,<span class="l">2</span>].map (<span class="k">fun</span> pick =&gt; (car, pick)))
+
+<span class="k">example</span> : games.length = <span class="l">9</span>
+        ∧ countWhere games (<span class="k">fun</span> g =&gt; g.1 == g.2) = <span class="l">3</span>       <span class="c">-- staying wins</span>
+        ∧ countWhere games (<span class="k">fun</span> g =&gt; g.1 != g.2) = <span class="l">6</span> := <span class="k">by</span>  <span class="c">-- switching wins</span>
+  decide</code></pre>
+    <div class="col">
+      <p style="margin-top:16px"><strong>The birthday paradox.</strong> Among n people (365 equally-likely birthdays), a shared birthday becomes more likely than not once <span class="mono">2 * numerator &lt; 365ⁿ</span>. The numbers are ~60 digits, so <span class="mono">native_decide</span> (which <em>compiles</em> the check to native code — Lean's <span class="mono">Nat</span> is arbitrary-precision) confirms the threshold is <em>exactly</em> 23:</p>
+    </div>
+<pre><code><span class="k">def</span> noCollisionNum : <span class="k">Nat</span> → <span class="k">Nat</span>
+  | <span class="l">0</span> =&gt; <span class="l">1</span>
+  | n + <span class="l">1</span> =&gt; (<span class="l">365</span> - n) * noCollisionNum n
+
+<span class="k">theorem</span> birthday_threshold :
+    <span class="l">2</span> * noCollisionNum <span class="l">23</span> &lt; <span class="l">365</span> ^ <span class="l">23</span> ∧ <span class="l">2</span> * noCollisionNum <span class="l">22</span> ≥ <span class="l">365</span> ^ <span class="l">22</span> := <span class="k">by</span>
+  native_decide</code></pre>
+    <div class="col">
+      <p style="margin-top:16px">The chapter also machine-checks <strong>de Méré's 1654 dice problem</strong> — the wager that launched probability theory — confirming that "one 6 in four rolls" clears ½ while "one double-6 in twenty-four rolls" falls just short.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
       <h2>Cookbook &amp; running it</h2>
       <p class="sub">Copy-paste recipes, then the two commands that check everything.</p>
     </div>

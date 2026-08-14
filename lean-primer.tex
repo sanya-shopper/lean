@@ -433,7 +433,9 @@ editor the infoview shows the evolving goal; on the command line you reason it
 out. A working vocabulary: \code{rfl} (true by computation), \code{decide} (run a
 decision procedure on a finite/decidable goal), \code{simp} (rewrite with a lemma
 database), \code{omega} (linear arithmetic over integers and naturals), and
-\code{induction}.
+\code{induction}. \emph{Every} construct, tactic, and lemma used in this primer's
+code is glossed in the reference (\Cref{app:reference}); reach for it whenever a
+listing shows something unfamiliar.
 
 Lean's \code{BitVec n} type---fixed-width machine words with wraparound
 arithmetic---is the layer where cryptography lives, and it is directly relevant
@@ -506,7 +508,8 @@ equivalently ``$J(n)$ is the binary numeral of $n$ rotated left by one bit''
 direct callback to \code{rotr} in \Cref{sec:proofs}, which is why this problem is
 pleasantly close to the SHA-256 world. Here is the recurrence and the general
 theorem, both machine-checked in pure Lean (no library). The listing below is
-\textbf{what you type}---the definition and a tactic proof:
+\textbf{what you type}---the definition and a tactic proof; any construct in it
+is glossed in \Cref{app:reference}:
 
 \begin{lstlisting}
 def josephus : Nat → Nat
@@ -566,6 +569,55 @@ that Lean makes routine---and, notably, it required no mathematics library at
 all.
 
 % ===========================================================================
+\section{Illuminating examples: discrete probability}\label{sec:prob}
+% ===========================================================================
+Probability makes a nice showcase because the surprising facts become things the
+machine can \emph{check}. Over a finite, equally-likely sample space a
+probability is just \code{favorable / total} (two naturals), and a claim
+``$p > 1/2$'' is the exact inequality \code{2 * favorable > total}---no real
+numbers required.
+
+\paragraph{Monty Hall.} Enumerate the nine equally-likely \code{(car, firstPick)}
+games. After the host opens a goat door, switching wins \emph{exactly when your
+first pick was wrong}, so it wins $6/9 = 2/3$ against staying's $3/9$:
+
+\begin{lstlisting}
+def games : List (Nat × Nat) :=            -- all 9 (car, pick) pairs
+  [0,1,2].flatMap (fun car => [0,1,2].map (fun pick => (car, pick)))
+
+def countWhere (xs : List α) (p : α → Bool) : Nat := (xs.filter p).length
+
+example : games.length = 9
+        ∧ countWhere games (fun g => g.1 == g.2) = 3       -- staying wins
+        ∧ countWhere games (fun g => g.1 != g.2) = 6 := by  -- switching wins
+  decide
+\end{lstlisting}
+
+\paragraph{The birthday paradox.} Among $n$ people (365 equally-likely
+birthdays), all differ with probability $\bigl(\prod_{i<n}(365-i)\bigr)/365^{\,n}$;
+a shared birthday becomes more likely than not once \code{2 * numerator < 365^n}.
+The numbers are $\sim$60 digits, so \code{native_decide}---which \emph{compiles}
+the check to native code rather than reducing it in the kernel---does the
+arithmetic (Lean's \code{Nat} is arbitrary-precision). It confirms the threshold
+is \emph{exactly} 23 people:
+
+\begin{lstlisting}
+def noCollisionNum : Nat → Nat
+  | 0 => 1
+  | n + 1 => (365 - n) * noCollisionNum n
+
+theorem birthday_threshold :
+    2 * noCollisionNum 23 < 365 ^ 23 ∧ 2 * noCollisionNum 22 ≥ 365 ^ 22 := by
+  native_decide
+\end{lstlisting}
+
+\noindent The companion \code{Primer/Probability.lean} adds De M\'er\'e's 1654
+dice problem---the wager that launched the subject---machine-checking that a bet
+paying off on ``one 6 in four rolls'' clears $1/2$ while ``one double-6 in
+twenty-four rolls'' falls just short. Every construct these listings use is
+glossed in \Cref{app:reference}.
+
+% ===========================================================================
 \section{mathlib, and where to go next}\label{sec:next}
 % ===========================================================================
 \textbf{mathlib} is the community's large, coherent library of formalized
@@ -602,6 +654,79 @@ runnable, type-checked source.
   \item[\texttt{elan} / \texttt{lake}] the toolchain manager (installs/selects Lean versions) and
     the build system / package manager.
 \end{description}
+
+% ===========================================================================
+\appendix
+\section{Syntax and tactics reference}\label{app:reference}
+% ===========================================================================
+Every language construct used in this primer's code listings, grouped and
+glossed. ``Tactics'' run inside a \code{by} block; ``commands'' (starting with
+\code{\#}) run at compile time and print to the infoview.
+
+\newcommand{\grp}[1]{\medskip\noindent\textbf{#1}\nopagebreak\par\nobreak\smallskip}
+
+\grp{Commands and declarations.}
+\begin{tabular}{@{}l@{\hspace{1.4em}}p{9cm}@{}}
+\verb|#eval e| & run \texttt{e} and print the result \\[1.5pt]
+\verb|#check e| & print the type of \texttt{e} without running it \\[1.5pt]
+\verb|#print n| & print the definition or proof term of \texttt{n} \\[1.5pt]
+\verb|def| & define a value or function \\[1.5pt]
+\verb|theorem| / \verb|example| & state (and prove) a proposition; \texttt{example} is unnamed \\[1.5pt]
+\verb|inductive ... where| & declare an algebraic data type by its constructors \\[1.5pt]
+\verb|opaque| & declare a value with no body (e.g.\ one supplied externally) \\[1.5pt]
+\verb|@[extern "sym"]| & implement this declaration with the C symbol \texttt{sym} \\[1.5pt]
+\verb|@[export sym]| & expose this declaration to C under the name \texttt{sym} \\
+\end{tabular}
+
+\grp{Expression syntax.}
+\begin{tabular}{@{}l@{\hspace{1.4em}}p{9cm}@{}}
+\verb|fun x => e| & anonymous function (lambda) \\[1.5pt]
+\verb|let x := e| / \verb|let x <- e| & local binding; the \verb|<-| form sequences a monadic (e.g.\ \texttt{IO}) step \\[1.5pt]
+\verb|do ...| & sequence monadic actions \\[1.5pt]
+\verb|if c then a else b| & conditional \\[1.5pt]
+\verb!| pat => e! & a pattern-match arm (in a \texttt{def} or \texttt{match}) \\[1.5pt]
+\verb|(a, b)|, \verb|p.1|, \verb|p.2| & a pair and its two projections \\[1.5pt]
+\verb|s!"... {x} ..."| & string interpolation \\[1.5pt]
+\verb|0#8|, \verb|0xff#32| & a \texttt{BitVec} literal, written \emph{value}\texttt{\#}\emph{width} \\[1.5pt]
+\verb|:| \ / \ \verb|:=| & type ascription \ / \ ``is defined as'' \\
+\end{tabular}
+
+\grp{Operators.}
+\begin{tabular}{@{}l@{\hspace{1.4em}}p{9cm}@{}}
+\verb|+  -  *  /  %| & arithmetic on \texttt{Nat} (\texttt{/} and \texttt{\%} are truncating) \\[1.5pt]
+\verb|^| & exponentiation \\[1.5pt]
+\verb|=  <  <=  >=| & (in)equality \emph{propositions}; \verb|==| and \verb|!=| are Boolean \\[1.5pt]
+\verb!&&&  |||  ^^^  ~~~! & bitwise and / or / xor / not on \texttt{BitVec} \\[1.5pt]
+\verb|>>>  <<<| & right / left shift on \texttt{BitVec} \\
+\end{tabular}
+
+\grp{Tactics.}
+\begin{tabular}{@{}l@{\hspace{1.4em}}p{9cm}@{}}
+\verb|rfl| & close a goal whose two sides compute to the same value \\[1.5pt]
+\verb|decide| & decide a decidable goal by evaluating it \\[1.5pt]
+\verb|native_decide| & like \texttt{decide}, but compiled to native code (large computations) \\[1.5pt]
+\verb|simp| / \verb|simp only [ls]| & simplify by rewriting (with \emph{only} the lemmas \texttt{ls}) \\[1.5pt]
+\verb|omega| & decide linear arithmetic over \texttt{Nat}/\texttt{Int} \\[1.5pt]
+\verb|induction n with ...| & induct on \texttt{n}, one arm per constructor; an arm binds the induction hypothesis \\[1.5pt]
+\verb|intro h| & move a \verb|forall|/\verb|->| premise into the context \\[1.5pt]
+\verb|rw [eqs]| & rewrite the goal with equations; \verb|rw [e] at h |\(\vdash\) also targets \texttt{h} and the goal \\[1.5pt]
+\verb|subst h| & eliminate a variable using an equation hypothesis \\[1.5pt]
+\verb|have h : P := pf| & introduce a proved sub-fact \texttt{h} \\[1.5pt]
+\verb|show P| & restate the goal in a definitionally-equal form \\[1.5pt]
+\verb|calc a = b := ...| & a chain of (in)equalities, each with its justification \\[1.5pt]
+\verb!rcases e with h | h! & case-split on a disjunction or structure \\[1.5pt]
+\verb|·| & focus the first remaining goal (one bullet per case) \\
+\end{tabular}
+
+\paragraph{Referenced library items.} Their names describe them:
+\texttt{Nat.recAux} (the recursor / induction principle for \texttt{Nat}),
+\texttt{Eq.refl a} (the proof \texttt{a = a}), the arithmetic lemmas
+\texttt{Nat.succ\_mul}, \texttt{Nat.mul\_succ}, \texttt{Nat.pow\_zero},
+\texttt{Nat.pow\_succ}, \texttt{Nat.two\_pow\_pos}, \texttt{Nat.div\_lt\_self};
+the list operations \texttt{List.map}, \texttt{List.filter},
+\texttt{List.flatMap}, \texttt{List.range}, \texttt{.length}; and
+\texttt{Vector.append} (length-tracking concatenation). The unfolding equation of
+a well-founded definition \texttt{f} is available as \texttt{f.eq\_def}.
 
 \printbibliography[heading=bibintoc,title={References}]
 

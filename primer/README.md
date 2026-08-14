@@ -39,6 +39,7 @@ verification*. (The `#eval` lines also serve as executable spot-checks.)
 | `Primer/Spec.lean` | The **verify-your-own-code** workflow: an invariant that travels with the data as a proof, a monotonicity theorem, and a fast implementation proved equal to a reference model. |
 | `Primer/Diff.lean` | The atom of differential cryptanalysis: XOR/AND/modular-add difference algebra (exact vs data-dependent) and why *checking* a collision is trivial while *reasoning* about it is the content. Ties to the survey. |
 | `Primer/Josephus.lean` | A real theorem, proved: the Josephus closed form `J(2^m+l)=2l+1` from Knuth's *Concrete Mathematics*, three formulations machine-checked to agree, with the "rotate the binary numeral left by one bit" view echoing `rotr`. |
+| `Primer/Probability.lean` | Discrete probability as exact counting (no mathlib): Monty Hall (switching wins 2/3), de Méré's 1654 problem, and the birthday paradox threshold (exactly 23 people, via `native_decide` on ~60-digit `Nat`s). |
 
 ## Cookbook: recipes you can copy
 
