@@ -1,4 +1,7 @@
 name = "mathlib-tour"
+
+# Shared dependency store; see ../../lean-packages/README.md.
+packagesDir = "../../lean-packages/v4.33.0"
 defaultTargets = ["MathlibTour"]
 
 [[require]]
