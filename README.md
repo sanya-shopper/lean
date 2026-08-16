@@ -16,7 +16,7 @@ Two things, done in parallel:
 |------|------------|
 | `NOTES.md` | The survey: findings from research threads + a ranked contribution-boundary map, including a retrospective (§6) on formalizing what broke MD5/SHA-1. **Start here.** |
 | `lean-primer.tex` / `lean-primer.pdf` | **The canonical primer**: a typeset 8-page PDF (source + output). Build/test with `tools/build-primer.sh`. |
-| `refs/` | Local copies of freely-available Lean manuals/papers + `lean-refs.bib` (see `refs/README.md` for provenance). |
+| `bibsrc/` | Local copies of freely-available Lean manuals/papers + `lean-refs.bib` (see `bibsrc/README.md` for provenance). |
 | `primer/` | A `lake` project that builds clean on Lean 4.33 with **no mathlib**. |
 | `primer/PRIMER.md` | Markdown mirror of the primer (the PDF is canonical). |
 | `primer/README.md` | Build/run instructions + cookbook recipes. |
