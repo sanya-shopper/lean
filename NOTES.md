@@ -413,3 +413,10 @@ SAT" (arXiv 2406.20072) · CryptoSMT (github.com/kste/cryptosmt).
 Adjacent verified crypto: Appel SHA-256 (TOPLAS 2015) · HACL\* (CCS 2017) ·
 EverCrypt (S&P 2020) · aws-lc-verification · CryptHOL (J. Cryptology 2019) ·
 Formosa SHA-3 (CCS 2019, ePrint 2019/1155).
+
+## Open question from the 2026-08-21 portfolio triage (item 15)
+
+A question about the scoping proof was sent to the owner during the
+tree-wide triage and is still unanswered.  The exact question text was
+not preserved outside that session; re-pose it at the start of the
+next work session here before extending the proof work.
