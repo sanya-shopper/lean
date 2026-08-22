@@ -29,5 +29,7 @@ lake exe cache get     # download mathlib's prebuilt oleans (~6 GB, once)
 lake build             # first `import Mathlib` load takes a few minutes
 ```
 
-The `.lake/` directory (mathlib source + ~6 GB of oleans) is git-ignored — it is a
-rebuildable cache, not source.
+Nothing regenerable lands in the repo: mathlib source + its ~6 GB of oleans go to
+the shared package store (`../../_lean-packages/v4.33.0`, set as `packagesDir` in
+`lakefile.toml`), and build output goes to `../../_buildoutput/lean/mathlib-tour`.
+Both are rebuildable caches, not source.

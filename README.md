@@ -15,13 +15,13 @@ Two things, done in parallel:
 | Path | What it is |
 |------|------------|
 | `NOTES.md` | The survey: findings from research threads + a ranked contribution-boundary map, including a retrospective (§6) on formalizing what broke MD5/SHA-1. **Start here.** |
-| `lean-primer.tex` / `lean-primer.pdf` | **The canonical primer**: a typeset 8-page PDF (source + output). Build/test with `tools/build-primer.sh`. |
-| `bibsrc/` | Local copies of freely-available Lean manuals/papers + `lean-refs.bib` (see `bibsrc/README.md` for provenance). |
+| `lean-primer.tex` / `lean-primer.pdf` | **The canonical primer**: a typeset 12-page PDF (source + output). Build/test with `tools/build-primer.sh`. |
+| `bibsrc/` | Bibliography source: `lean-refs.bib` + provenance notes (`bibsrc/README.md`). The fetched PDFs themselves live in the sibling tree `../_refs/lean/`. |
 | `primer/` | A `lake` project that builds clean on Lean 4.33 with **no mathlib**. |
 | `primer/PRIMER.md` | Markdown mirror of the primer (the PDF is canonical). |
 | `primer/README.md` | Build/run instructions + cookbook recipes. |
 | `primer/Primer/*.lean` | Seven type-checked chapters: `Basics`, `Proofs`, `BitVec` (SHA-256 primitive layer), `Spec` (verify-your-own-code), `Diff` (difference algebra), `Josephus` (a proved closed-form theorem), `Probability` (discrete probability by counting). |
-| `mathlib-tour/` | A separate mathlib-backed companion (pinned to mathlib v4.33.0) showing what mathlib buys: `ring`, `Finset` sums, √2 irrational, rational probability. Keeps `primer/` core-only. `.lake` (~6 GB) is git-ignored. |
+| `mathlib-tour/` | A separate mathlib-backed companion (pinned to mathlib v4.33.0) showing what mathlib buys: `ring`, `Finset` sums, √2 irrational, rational probability. Keeps `primer/` core-only. Its ~6 GB dependency store lives outside the repo in the shared `../_lean-packages/` cache. |
 | `site/` | Source for the two published artifact pages. |
 | `tools/build-primer.sh` | Builds `lean-primer.pdf` and unit-tests the build (clean LaTeX, references resolved, no `??`). |
 

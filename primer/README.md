@@ -1,7 +1,7 @@
 # Lean 4 primer & cookbook
 
 A hands-on companion to `PRIMER.md`. Everything here is **plain Lean 4 (v4.33.0),
-no mathlib** — it builds in seconds and works offline. The four chapters are
+no mathlib** — it builds in seconds and works offline. The seven chapters are
 real, type-checked Lean; `lake build` is the proof that every example and every
 theorem in them actually goes through.
 
@@ -29,7 +29,7 @@ A clean `lake build` exit code of 0 means every theorem in the project is
 proved — there is no separate "test" step, because in Lean *the build is the
 verification*. (The `#eval` lines also serve as executable spot-checks.)
 
-## The four chapters
+## The seven chapters
 
 | File | What it teaches |
 |------|-----------------|
