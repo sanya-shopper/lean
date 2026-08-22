@@ -3,7 +3,7 @@ name = "primer"
 # Build output goes to the disposable tree at Projects/_buildoutput/,
 # which is safe to delete wholesale; Lake recreates it on the next build.
 # Static path, not $VAR: lakefile.toml does not interpolate the environment.
-buildDir = "../../_buildoutput/lean/primer"
+buildDir = "/Users/thv/Claude/Projects/_buildoutput/lean/primer"
 defaultTargets = ["Primer"]
 
 [[lean_lib]]
